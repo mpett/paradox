@@ -14,7 +14,14 @@ public class VectorDistance {
             "/_cod_database_code/materials.txt";
 
     public static void main(String[] args) throws IOException {
-        BufferedReader br = new BufferedReader(new FileReader(MATERIAL_IDS));
+        ArrayList<Integer> mId = materialIndices(MATERIAL_IDS);
+        for (int id : mId) System.err.println(id);
+        System.err.println(mId.size());
+    }
+
+    private static ArrayList<Integer> materialIndices(String fileName)
+        throws IOException {
+        BufferedReader br = new BufferedReader(new FileReader(fileName));
         ArrayList<Integer> materialIds = new ArrayList<>();
         try {
             StringBuilder sb = new StringBuilder();
@@ -33,7 +40,6 @@ public class VectorDistance {
         } finally {
             br.close();
         }
-
-
+        return materialIds;
     }
 }
