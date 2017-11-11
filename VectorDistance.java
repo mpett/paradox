@@ -15,8 +15,45 @@ public class VectorDistance {
 
     public static void main(String[] args) throws IOException {
         ArrayList<Integer> mId = materialIndices(MATERIAL_IDS);
-        for (int id : mId) System.err.println(id);
-        System.err.println(mId.size());
+        ArrayList<Double> dosVector = new ArrayList<>();
+        ArrayList<Double> energyVector = new ArrayList<>();
+        BufferedReader br = new BufferedReader(new FileReader(FILE_PATH));
+        try {
+            StringBuilder sb = new StringBuilder();
+            String line = br.readLine();
+
+            while (line != null) {
+                sb.append(line);
+                sb.append(System.lineSeparator());
+                line = br.readLine();
+            }
+            String everything = sb.toString();
+            everything = everything.substring(7);
+            everything = everything.substring(0,
+                    everything.length() - 3);
+            String[] vectors = everything.split("dos");
+            String dosString = vectors[1].substring(4);
+            String energyString = vectors[0]
+                    .substring(0, vectors[0].length()-4);
+            String[] dosSplit = dosString.split(", ");
+            String[] energySplit = energyString.split(", ");
+            for (String dos : dosSplit) {
+                dosVector.add(Double.parseDouble(dos));
+            }
+            for (String energy : energySplit) {
+                energyVector.add(Double.parseDouble(energy));
+            }
+        }
+        finally {
+            br.close();
+        }
+        for (double value : dosVector) {
+            System.err.println(value);
+        }
+        System.err.println("");
+        for (double value : energyVector) {
+            System.err.println(value);
+        }
     }
 
     private static ArrayList<Integer> materialIndices(String fileName)
