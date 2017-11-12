@@ -2,12 +2,14 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Set;
 
 public class VectorDistance {
     private static final String FILE_PATH =
             "/Users/martinpettersson/diraclaravel" +
                     "/data/materials/_cod_database_code" +
-                    "/2213366/DOS/dos.json";
+                    "/";
     private static final String MATERIAL_IDS
             = "/Users/martinpettersson" +
             "/diraclaravel/data/materials" +
@@ -15,49 +17,60 @@ public class VectorDistance {
 
     public static void main(String[] args) throws IOException {
         ArrayList<Integer> mId = materialIndices(MATERIAL_IDS);
-        parseMaterials();
+        HashMap<Integer, Material> materials = parseMaterials(mId);
+        Set<Integer> keys = materials.keySet();
+        System.err.println("Number of materials in hash map: " + keys.size());
     }
 
-    private static void parseMaterials() throws IOException {
-        ArrayList<Double> dosVector = new ArrayList<>();
-        ArrayList<Double> energyVector = new ArrayList<>();
-        BufferedReader br = new BufferedReader(new FileReader(FILE_PATH));
-        try {
-            StringBuilder sb = new StringBuilder();
-            String line = br.readLine();
+    private static HashMap<Integer, Material>
+            parseMaterials(ArrayList<Integer> indices) throws IOException {
+        HashMap<Integer, Material> materials = new HashMap<>();
+        int numberOfCatches = 0;
 
-            while (line != null) {
-                sb.append(line);
-                sb.append(System.lineSeparator());
-                line = br.readLine();
+        for (int materialId : indices) {
+            ArrayList<Double> dosVector = new ArrayList<>();
+            ArrayList<Double> energyVector = new ArrayList<>();
+            String extendedFilePath = FILE_PATH;
+            extendedFilePath += materialId + "/DOS/dos.json";
+            try {
+                BufferedReader br = new BufferedReader(
+                        new FileReader(extendedFilePath));
+                StringBuilder sb = new StringBuilder();
+                String line = br.readLine();
+
+                while (line != null) {
+                    sb.append(line);
+                    sb.append(System.lineSeparator());
+                    line = br.readLine();
+                }
+                String everything = sb.toString();
+                everything = everything.substring(7);
+                everything = everything.substring(0,
+                        everything.length() - 3);
+                String[] vectors = everything.split("dos");
+                String dosString = vectors[1].substring(4);
+                String energyString = vectors[0]
+                        .substring(0, vectors[0].length()-4);
+                String[] dosSplit = dosString.split(", ");
+                String[] energySplit = energyString.split(", ");
+                for (String dos : dosSplit) {
+                    dosVector.add(Double.parseDouble(dos));
+                }
+                for (String energy : energySplit) {
+                    energyVector.add(Double.parseDouble(energy));
+                }
+                br.close();
+            } catch (Exception e) {
+                numberOfCatches++;
+                continue;
             }
-            String everything = sb.toString();
-            everything = everything.substring(7);
-            everything = everything.substring(0,
-                    everything.length() - 3);
-            String[] vectors = everything.split("dos");
-            String dosString = vectors[1].substring(4);
-            String energyString = vectors[0]
-                    .substring(0, vectors[0].length()-4);
-            String[] dosSplit = dosString.split(", ");
-            String[] energySplit = energyString.split(", ");
-            for (String dos : dosSplit) {
-                dosVector.add(Double.parseDouble(dos));
-            }
-            for (String energy : energySplit) {
-                energyVector.add(Double.parseDouble(energy));
-            }
+            Material material = new Material(energyVector, dosVector, materialId);
+
+            materials.put(materialId, material);
         }
-        finally {
-            br.close();
-        }
-        for (double value : dosVector) {
-            System.err.println(value);
-        }
-        System.err.println("");
-        for (double value : energyVector) {
-            System.err.println(value);
-        }
+        System.err.println(numberOfCatches + " could not be parsed.");
+
+        return materials;
     }
 
     private static ArrayList<Integer> materialIndices(String fileName)
@@ -115,7 +128,7 @@ class Material {
         StringBuilder stringBuilder = new StringBuilder();
         stringBuilder.append("Material ID: ");
         stringBuilder.append(materialId);
-        stringBuilder.append("\n\n");
+        stringBuilder.append("\n");
 
         for (Double value : energy) {
             stringBuilder.append(value);
@@ -126,6 +139,7 @@ class Material {
 
         for (Double value : dos) {
             stringBuilder.append(value);
+            stringBuilder.append(" ");
         }
 
         return stringBuilder.toString();
