@@ -80,3 +80,50 @@ public class VectorDistance {
         return materialIds;
     }
 }
+
+class Material {
+    private ArrayList<Double> energy;
+    private ArrayList<Double> dos;
+    private int materialId;
+
+    public Material(ArrayList<Double> energy,
+                    ArrayList<Double> dos,
+                    int materialId) {
+        this.energy = energy;
+        this.dos = dos;
+        this.materialId = materialId;
+    }
+
+    public int getMaterialId() {
+        return materialId;
+    }
+
+    public ArrayList<Double> getDos() {
+        return dos;
+    }
+
+    public ArrayList<Double> getEnergy() {
+        return energy;
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder stringBuilder = new StringBuilder();
+        stringBuilder.append("Material ID: ");
+        stringBuilder.append(materialId);
+        stringBuilder.append("\n\n");
+
+        for (Double value : energy) {
+            stringBuilder.append(value);
+            stringBuilder.append(" ");
+        }
+
+        stringBuilder.append("\n");
+
+        for (Double value : dos) {
+            stringBuilder.append(value);
+        }
+
+        return stringBuilder.toString();
+    }
+}
