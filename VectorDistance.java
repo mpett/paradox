@@ -102,6 +102,27 @@ public class VectorDistance {
         return materialIds;
     }
 
+    private static double linearInterpolate(double after, double before,
+                                            double atPoint) {
+        return before + (after - before) * atPoint;
+    }
+
+    private double[] interpolateArray(double[] data, int fitCount) {
+        double[] newData = new double[fitCount];
+        double springFactor = (double) (data.length - 1)
+                                / (double) (fitCount - 1);
+        newData[0] = data[0];
+        for (int i = 1; i < fitCount - 1; i++) {
+            double tmp = (double) (i) * springFactor;
+            double before = Math.floor(tmp);
+            double after = Math.ceil(tmp);
+            double atPoint = tmp - before;
+            newData[i] = linearInterpolate(after, before, atPoint);
+        }
+        newData[fitCount - 1] = data[data.length - 1];
+        return newData;
+    }
+
     private static double cosineSimilarity(double[] vectorA,
                                            double[] vectorB) {
         double dotProduct = 0.0;
