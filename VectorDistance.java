@@ -142,6 +142,7 @@ class Material {
     private ArrayList<Double> energy;
     private ArrayList<Double> dos;
     private int materialId;
+    private final double[] EMPTY_DOUBLE_ARRAY = {};
 
     public Material(ArrayList<Double> energy,
                     ArrayList<Double> dos,
@@ -161,6 +162,19 @@ class Material {
 
     public ArrayList<Double> getEnergy() {
         return energy;
+    }
+
+    public double[] toPrimitive(Double[] array) {
+        if (array == null) {
+            return null;
+        } else if (array.length == 0) {
+            return EMPTY_DOUBLE_ARRAY;
+        }
+        final double[] result = new double[array.length];
+        for (int i = 0; i < array.length; i++) {
+            result[i] = array[i].doubleValue();
+        }
+        return result;
     }
 
     @Override
