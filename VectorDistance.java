@@ -15,6 +15,10 @@ public class VectorDistance {
 
     public static void main(String[] args) throws IOException {
         ArrayList<Integer> mId = materialIndices(MATERIAL_IDS);
+        parseMaterials();
+    }
+
+    private static void parseMaterials() throws IOException {
         ArrayList<Double> dosVector = new ArrayList<>();
         ArrayList<Double> energyVector = new ArrayList<>();
         BufferedReader br = new BufferedReader(new FileReader(FILE_PATH));
