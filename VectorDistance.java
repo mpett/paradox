@@ -2,6 +2,7 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Set;
 
@@ -16,8 +17,12 @@ public class VectorDistance {
             "/_cod_database_code/materials.txt";
 
     public static void main(String[] args) throws IOException {
+        long startTime = System.currentTimeMillis();
+        long elapsedTime = 0L;
         ArrayList<Integer> mId = materialIndices(MATERIAL_IDS);
         HashMap<Integer, Material> materials = parseMaterials(mId);
+        elapsedTime = (new Date()).getTime() - startTime;
+        System.err.println("Parse time: " + elapsedTime);
         Set<Integer> keys = materials.keySet();
         System.err.println("Number of materials in hash map: " + keys.size());
     }
@@ -95,6 +100,20 @@ public class VectorDistance {
             br.close();
         }
         return materialIds;
+    }
+
+    private static double cosineSimilarity(double[] vectorA,
+                                           double[] vectorB) {
+        double dotProduct = 0.0;
+        double normA = 0.0;
+        double normB = 0.0;
+        for (int i = 0; i < vectorA.length; i++) {
+            dotProduct += vectorA[i] * vectorB[i];
+            normA += Math.pow(vectorA[i], 2);
+            normB += Math.pow(vectorB[i], 2);
+        }
+        return dotProduct /
+                (Math.sqrt(normA) * Math.sqrt(normB));
     }
 }
 
