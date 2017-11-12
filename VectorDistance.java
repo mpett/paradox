@@ -30,10 +30,14 @@ public class VectorDistance {
         System.err.println("Time after parse: " + elapsedTime);
         unsortEnergy();
         elapsedTime = (new Date()).getTime() - startTime;
-        System.err.println("Time after unsorting " + elapsedTime);
+        System.err.println("Time after unsorting: " + elapsedTime);
 
+        for (int id : mId) {
+            System.err.println(materials.get(id));
+        }
 
         /*
+        Material m = materials.get(mId.get(0));
         double[] y = m.toPrimitive(m.getEnergy());
         double[] x = m.toPrimitive(m.getDos());
         for (double v : y)
@@ -41,8 +45,8 @@ public class VectorDistance {
         System.err.println("");
         LinearInterpolator li = new LinearInterpolator();
         PolynomialSplineFunction psf = li.interpolate(x, y);
-
-
+        elapsedTime = (new Date()).getTime() - startTime;
+        System.err.println("Time after interpolation: " + elapsedTime);
         */
 
     }
@@ -137,11 +141,18 @@ public class VectorDistance {
             for (int index = 0; index < dos.size(); index++) {
                 dosEnergyMap.put(dos.get(index), energy.get(index));
             }
+            Set<Double> dosSet = new HashSet<>();
+            dosSet.addAll(dos);
+            dos.clear();
+            dos.addAll(dosSet);
             Collections.sort(dos);
             ArrayList<Double> unsortedEngergy = new ArrayList<>();
             for (double dosValue : dos) {
                 unsortedEngergy.add(dosEnergyMap.get(dosValue));
             }
+
+
+
             m.setEnergy(unsortedEngergy);
             m.setDos(dos);
         }
@@ -227,6 +238,11 @@ class Material {
             stringBuilder.append(value);
             stringBuilder.append(" ");
         }
+
+        stringBuilder.append("\n");
+        stringBuilder.append(dos.size() + " " + energy.size());
+
+        stringBuilder.append("\n");
 
         return stringBuilder.toString();
     }
