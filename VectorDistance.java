@@ -33,21 +33,15 @@ public class VectorDistance {
         System.err.println("Time after unsorting: " + elapsedTime);
 
         for (int id : mId) {
-            System.err.println(materials.get(id));
+            Material m = materials.get(id);
+            double[] y = m.toPrimitive(m.getEnergy());
+            double[] x = m.toPrimitive(m.getDos());
+            LinearInterpolator li = new LinearInterpolator();
+            PolynomialSplineFunction psf = li.interpolate(x, y);
         }
-
-        /*
-        Material m = materials.get(mId.get(0));
-        double[] y = m.toPrimitive(m.getEnergy());
-        double[] x = m.toPrimitive(m.getDos());
-        for (double v : y)
-            System.err.print(v + " ");
-        System.err.println("");
-        LinearInterpolator li = new LinearInterpolator();
-        PolynomialSplineFunction psf = li.interpolate(x, y);
+        
         elapsedTime = (new Date()).getTime() - startTime;
         System.err.println("Time after interpolation: " + elapsedTime);
-        */
 
     }
 
@@ -150,9 +144,6 @@ public class VectorDistance {
             for (double dosValue : dos) {
                 unsortedEngergy.add(dosEnergyMap.get(dosValue));
             }
-
-
-
             m.setEnergy(unsortedEngergy);
             m.setDos(dos);
         }
