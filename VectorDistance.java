@@ -1,10 +1,8 @@
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Set;
+import java.util.*;
+
 import org.apache.commons.math3.analysis.interpolation.LinearInterpolator;
 import org.apache.commons.math3.analysis.polynomials.PolynomialSplineFunction;
 
@@ -17,34 +15,43 @@ public class VectorDistance {
             = "/Users/martinpettersson" +
             "/diraclaravel/data/materials" +
             "/_cod_database_code/materials.txt";
+    private static ArrayList<Integer> mId;
+    private static HashMap<Integer, Material> materials;
 
     public static void main(String[] args) throws IOException {
         long startTime = System.currentTimeMillis();
         long elapsedTime = 0L;
-        ArrayList<Integer> mId = materialIndices(MATERIAL_IDS);
-        HashMap<Integer, Material> materials = parseMaterials(mId);
-        elapsedTime = (new Date()).getTime() - startTime;
-        System.err.println("Parse time: " + elapsedTime);
+        mId = materialIndices(MATERIAL_IDS);
+        materials = parseMaterials(mId);
+
         Set<Integer> keys = materials.keySet();
         System.err.println("Number of materials in hash map: " + keys.size());
-        Material m = materials.get(mId.get(0));
-        /*double[] y = {-4.1399, -4.1359, -4.1319, -4.1279, -4.1239, -4.1199};
-        double[] x = {1.0, 2.0, 3.0, 4.0, 5.0, 6.0};
+        elapsedTime = (new Date()).getTime() - startTime;
+        System.err.println("Time after parse: " + elapsedTime);
+        unsortEnergy();
+        elapsedTime = (new Date()).getTime() - startTime;
+        System.err.println("Time after unsorting " + elapsedTime);
+
+
+        /*
+        double[] y = m.toPrimitive(m.getEnergy());
+        double[] x = m.toPrimitive(m.getDos());
         for (double v : y)
             System.err.print(v + " ");
         System.err.println("");
         LinearInterpolator li = new LinearInterpolator();
         PolynomialSplineFunction psf = li.interpolate(x, y);
-        for (double xi = 1.0; xi <= 4.0; xi+=1.0) {
-            double yi = psf.value(xi);
-            System.err.print(yi + " ");
-        }*/
+
+
+        */
+
     }
 
     private static HashMap<Integer, Material>
             parseMaterials(ArrayList<Integer> indices) throws IOException {
         HashMap<Integer, Material> materials = new HashMap<>();
         int numberOfCatches = 0;
+        ArrayList<Integer> indicesToBeRemoved = new ArrayList<>();
 
         for (int materialId : indices) {
             ArrayList<Double> dosVector = new ArrayList<>();
@@ -81,6 +88,7 @@ public class VectorDistance {
                 br.close();
             } catch (Exception e) {
                 numberOfCatches++;
+                indicesToBeRemoved.add(materialId);
                 continue;
             }
             Material material = new Material(energyVector, dosVector, materialId);
@@ -88,6 +96,10 @@ public class VectorDistance {
             materials.put(materialId, material);
         }
         System.err.println(numberOfCatches + " could not be parsed.");
+
+        for (int id : indicesToBeRemoved) {
+            mId.remove(new Integer(id));
+        }
 
         return materials;
     }
@@ -114,6 +126,25 @@ public class VectorDistance {
             br.close();
         }
         return materialIds;
+    }
+
+    private static void unsortEnergy() {
+        for (int materialId : mId) {
+            Material m = materials.get(materialId);
+            HashMap<Double, Double> dosEnergyMap = new HashMap<>();
+            ArrayList<Double> dos = m.getDos();
+            ArrayList<Double> energy = m.getEnergy();
+            for (int index = 0; index < dos.size(); index++) {
+                dosEnergyMap.put(dos.get(index), energy.get(index));
+            }
+            Collections.sort(dos);
+            ArrayList<Double> unsortedEngergy = new ArrayList<>();
+            for (double dosValue : dos) {
+                unsortedEngergy.add(dosEnergyMap.get(dosValue));
+            }
+            m.setEnergy(unsortedEngergy);
+            m.setDos(dos);
+        }
     }
 
     private static double cosineSimilarity(double[] vectorA,
@@ -155,6 +186,14 @@ class Material {
 
     public ArrayList<Double> getEnergy() {
         return energy;
+    }
+
+    public void setEnergy(ArrayList<Double> energy) {
+        this.energy = energy;
+    }
+
+    public void setDos(ArrayList<Double> dos) {
+        this.dos = dos;
     }
 
     public double[] toPrimitive(ArrayList<Double> array) {
