@@ -5,6 +5,8 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Set;
+import org.apache.commons.math3.analysis.interpolation.LinearInterpolator;
+import org.apache.commons.math3.analysis.polynomials.PolynomialSplineFunction;
 
 public class VectorDistance {
     private static final String FILE_PATH =
@@ -25,6 +27,18 @@ public class VectorDistance {
         System.err.println("Parse time: " + elapsedTime);
         Set<Integer> keys = materials.keySet();
         System.err.println("Number of materials in hash map: " + keys.size());
+        Material m = materials.get(mId.get(0));
+        /*double[] y = {-4.1399, -4.1359, -4.1319, -4.1279, -4.1239, -4.1199};
+        double[] x = {1.0, 2.0, 3.0, 4.0, 5.0, 6.0};
+        for (double v : y)
+            System.err.print(v + " ");
+        System.err.println("");
+        LinearInterpolator li = new LinearInterpolator();
+        PolynomialSplineFunction psf = li.interpolate(x, y);
+        for (double xi = 1.0; xi <= 4.0; xi+=1.0) {
+            double yi = psf.value(xi);
+            System.err.print(yi + " ");
+        }*/
     }
 
     private static HashMap<Integer, Material>
@@ -102,27 +116,6 @@ public class VectorDistance {
         return materialIds;
     }
 
-    private static double linearInterpolate(double after, double before,
-                                            double atPoint) {
-        return before + (after - before) * atPoint;
-    }
-
-    private double[] interpolateArray(double[] data, int fitCount) {
-        double[] newData = new double[fitCount];
-        double springFactor = (double) (data.length - 1)
-                                / (double) (fitCount - 1);
-        newData[0] = data[0];
-        for (int i = 1; i < fitCount - 1; i++) {
-            double tmp = (double) (i) * springFactor;
-            double before = Math.floor(tmp);
-            double after = Math.ceil(tmp);
-            double atPoint = tmp - before;
-            newData[i] = linearInterpolate(after, before, atPoint);
-        }
-        newData[fitCount - 1] = data[data.length - 1];
-        return newData;
-    }
-
     private static double cosineSimilarity(double[] vectorA,
                                            double[] vectorB) {
         double dotProduct = 0.0;
@@ -164,15 +157,15 @@ class Material {
         return energy;
     }
 
-    public double[] toPrimitive(Double[] array) {
+    public double[] toPrimitive(ArrayList<Double> array) {
         if (array == null) {
             return null;
-        } else if (array.length == 0) {
+        } else if (array.size() == 0) {
             return EMPTY_DOUBLE_ARRAY;
         }
-        final double[] result = new double[array.length];
-        for (int i = 0; i < array.length; i++) {
-            result[i] = array[i].doubleValue();
+        final double[] result = new double[array.size()];
+        for (int i = 0; i < array.size(); i++) {
+            result[i] = array.get(i);
         }
         return result;
     }
