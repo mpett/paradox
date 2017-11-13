@@ -1,6 +1,8 @@
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class HumanCannonball {
     static BufferedReader reader;
@@ -10,12 +12,38 @@ public class HumanCannonball {
                 new BufferedReader(
                         new InputStreamReader((
                                 System.in)));
-        noDuplicates();
+        tarifa();
         reader.close();
     }
 
     private static int f(int n) {
         return 3*n;
+    }
+
+    private static void tarifa() throws IOException {
+        int X = Integer.parseInt(reader.readLine());
+        int N = Integer.parseInt(reader.readLine());
+        int totalData = X * (N+1);
+        int spentData = 0;
+        for (int p = 0; p < N; p++) {
+            spentData +=
+                    Integer.parseInt(
+                            reader.readLine());
+        }
+        System.out.println(totalData - spentData);
+    }
+
+    private static void hissingMicrophone() throws IOException {
+        String input = reader.readLine();
+        Pattern p = Pattern.compile("ss");
+        int occurences = 0;
+        Matcher m = p.matcher(input); //etc
+        while(m.find())
+            occurences++;
+        if (occurences >= 1) {
+            System.out.println("hiss");
+        } else
+            System.out.println("no hiss");
     }
 
     private static void noDuplicates() throws IOException {
