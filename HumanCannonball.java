@@ -10,12 +10,34 @@ public class HumanCannonball {
                 new BufferedReader(
                         new InputStreamReader((
                                 System.in)));
-        modulo();
+        noDuplicates();
         reader.close();
     }
 
     private static int f(int n) {
         return 3*n;
+    }
+
+    private static void noDuplicates() throws IOException {
+        String inputLine = reader.readLine();
+        String[] splitInput
+                = inputLine.split(" ");
+        String result = "yes";
+        for (int i = 0; i < splitInput.length; i++) {
+            String wordToBeChecked = splitInput[i];
+            int matches = 0;
+            for (int j = 0; j < splitInput.length; j++) {
+                if (wordToBeChecked
+                        .equals(splitInput[j])) {
+                    matches++;
+                }
+            }
+            if (matches > 1) {
+                result = "no";
+                break;
+            }
+        }
+        System.out.println(result);
     }
 
     private static void triTiling() throws IOException {
