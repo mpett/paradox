@@ -69,12 +69,16 @@ public class VectorDistance {
                 " arrays: " + elapsedTime);
         //printAllMaterials();
 
+        System.err.println("Calculating distances. Please stand by...");
+
         distances();
 
+        elapsedTime
+                = (new Date()).getTime() - startTime;
         System.err.println(
                 "Time after calculating distances " + elapsedTime);
 
-        //displayTopCandidatesOnInput();
+        displayTopCandidatesOnInput();
     }
 
     private static double cosineSimilarity(Material m1, Material m2) {
@@ -114,11 +118,29 @@ public class VectorDistance {
                     reader.close();
                     System.exit(0);
                 }
+                System.err.println("");
+                System.err.println("--- EUCLIDEAN ---");
+                System.err.println("");
                 Material m = materials.get(id);
                 Map<Integer, Double> d = topCandidates(m);
+                int j = 0;
                 for (int i : d.keySet()) {
+                    if (j > 20) break;
+                    j++;
                     System.err.println(m.getMaterialId() + " dist "
                             + i + " = " + d.get(i));
+                }
+                System.err.println("");
+                System.err.println("--- COSINE ---");
+                System.err.println("");
+
+                Map<Integer, Double> c = topCosineCandidates(m);
+                int k = 0;
+                for (int i : c.keySet()) {
+                    if (k > 20) break;
+                    k++;
+                    System.err.println(m.getMaterialId() + " dist "
+                            + i + " = " + c.get(i));
                 }
             } catch (Exception e) {
                 System.err.println
@@ -126,6 +148,12 @@ public class VectorDistance {
                 continue;
             }
         }
+    }
+
+    private static Map<Integer, Double> topCosineCandidates(Material m) {
+        HashMap<Integer, Double> distances = m.getCosineDistances();
+        Map<Integer, Double> sortedMap = sortByValue(distances);
+        return sortedMap;
     }
 
     private static Map<Integer, Double> topCandidates(Material m) {
@@ -167,6 +195,9 @@ public class VectorDistance {
                 double d = eDistance.compute(firstMaterialEnergy,
                         secondMaterialEnergy);
                 m.setDistances(m2.getMaterialId(), d);
+
+                double cosineDistance = cosineSimilarity(m, m2);
+                m.setCosineDistances(m2.getMaterialId(), cosineDistance);
             }
         }
     }
@@ -396,6 +427,7 @@ class Material {
     private PolynomialSplineFunction psf;
     private PolynomialSplineFunction psf2;
     private HashMap<Integer, Double> distances;
+    private HashMap<Integer, Double> cosineDistances;
 
     public boolean hasBeenInterpolated = false;
 
@@ -403,10 +435,19 @@ class Material {
                     ArrayList<Double> dos,
                     int materialId) {
         distances = new HashMap<>();
+        cosineDistances = new HashMap<>();
         interpolatedEnergy = new ArrayList<>();
         this.energy = energy;
         this.dos = dos;
         this.materialId = materialId;
+    }
+
+    public void setCosineDistances(int toMaterialId, double distance) {
+        cosineDistances.put(toMaterialId, distance);
+    }
+
+    public HashMap<Integer, Double> getCosineDistances() {
+        return cosineDistances;
     }
 
     public void setDistances(int toMaterialId, double distance) {
