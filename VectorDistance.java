@@ -6,6 +6,7 @@ import java.util.*;
 import org.apache.commons.math3.analysis.interpolation.LinearInterpolator;
 import org.apache.commons.math3.analysis.interpolation.SplineInterpolator;
 import org.apache.commons.math3.analysis.polynomials.PolynomialSplineFunction;
+import org.apache.commons.math3.ml.distance.EuclideanDistance;
 
 public class VectorDistance {
     private static final String FILE_PATH =
@@ -56,7 +57,30 @@ public class VectorDistance {
         System.err.println("Time after creating interpolated" +
                 " arrays: " + elapsedTime);
 
-        printAllMaterials();
+        //printAllMaterials();
+
+        distances();
+        System.err.println("Time after calculating distances " + elapsedTime);
+    }
+
+    private static void distances() {
+        for (int id : mId) {
+            Material m = materials.get(id);
+            if (!m.hasBeenInterpolated) continue;
+            for (int id2 : mId) {
+                Material m2 = materials.get(id2);
+                if(!m2.hasBeenInterpolated) continue;
+                EuclideanDistance eDistance = new EuclideanDistance();
+                double[] firstMaterialEnergy = m.toPrimitive(
+                        m.getInterpolatedEnergy()
+                );
+                double[] secondMaterialEnergy = m2.toPrimitive(
+                        m2.getInterpolatedEnergy()
+                );
+                double d = eDistance.compute(firstMaterialEnergy,
+                        secondMaterialEnergy);
+            }
+        }
     }
 
     private static void createInterpolatedEnergyArray() {
