@@ -9,6 +9,7 @@ import org.apache.commons.math3.analysis.interpolation.LinearInterpolator;
 import org.apache.commons.math3.analysis.interpolation.SplineInterpolator;
 import org.apache.commons.math3.analysis.polynomials.PolynomialSplineFunction;
 import org.apache.commons.math3.ml.distance.EuclideanDistance;
+import org.apache.commons.text.similarity.CosineSimilarity;
 
 public class VectorDistance {
     private static final String FILE_PATH =
@@ -73,7 +74,31 @@ public class VectorDistance {
         System.err.println(
                 "Time after calculating distances " + elapsedTime);
 
-        displayTopCandidatesOnInput();
+        //displayTopCandidatesOnInput();
+    }
+
+    private static double cosineSimilarity(Material m1, Material m2) {
+        CosineSimilarity dist = new CosineSimilarity();
+
+        String c1 = vectorToString(m1.getEnergy());
+        String c2 = vectorToString(m2.getEnergy());
+
+        Map<CharSequence, Integer> leftVector =
+                Arrays.stream(c1.split(""))
+                        .collect(Collectors.toMap(c -> c, c -> 1, Integer::sum));
+        Map<CharSequence, Integer> rightVector =
+                Arrays.stream(c2.split(""))
+                        .collect(Collectors.toMap(c -> c, c -> 1, Integer::sum));
+
+        return  (1 - dist.cosineSimilarity(leftVector,rightVector));
+    }
+
+    private static String vectorToString(ArrayList<Double> vector) {
+        StringBuilder stringBuilder = new StringBuilder();
+        for (double d : vector) {
+            stringBuilder.append(d);
+        }
+        return stringBuilder.toString();
     }
 
     private static void displayTopCandidatesOnInput() throws IOException {
@@ -82,7 +107,9 @@ public class VectorDistance {
                         new InputStreamReader(System.in));
         while (true) {
             try {
+                System.err.print("Would you kindly enter a Material ID: ");
                 int id = Integer.parseInt(reader.readLine());
+                System.err.println();
                 if (id == 0) {
                     reader.close();
                     System.exit(0);
@@ -357,20 +384,6 @@ public class VectorDistance {
             m.setEnergy(unsortedEngergy);
             m.setDos(dos);
         }
-    }
-
-    private static double cosineSimilarity(double[] vectorA,
-                                           double[] vectorB) {
-        double dotProduct = 0.0;
-        double normA = 0.0;
-        double normB = 0.0;
-        for (int i = 0; i < vectorA.length; i++) {
-            dotProduct += vectorA[i] * vectorB[i];
-            normA += Math.pow(vectorA[i], 2);
-            normB += Math.pow(vectorB[i], 2);
-        }
-        return dotProduct /
-                (Math.sqrt(normA) * Math.sqrt(normB));
     }
 }
 
