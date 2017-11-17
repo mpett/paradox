@@ -36,9 +36,6 @@ public class VectorDistance {
         elapsedTime = (new Date()).getTime() - startTime;
         System.err.println("Time after unsorting: " + elapsedTime);
 
-        elapsedTime = (new Date()).getTime() - startTime;
-        System.err.println("Time after interpolation: " + elapsedTime);
-
         try {
             filterOnEnergyThreshold();
         } catch (Exception e) {
@@ -47,6 +44,60 @@ public class VectorDistance {
 
         elapsedTime = (new Date()).getTime() - startTime;
         System.err.println("Time after energy filtering: " + elapsedTime);
+
+        interpolate();
+
+        elapsedTime = (new Date()).getTime() - startTime;
+        System.err.println("Time after interpolation: " + elapsedTime);
+
+        createInterpolatedEnergyArray();
+
+        elapsedTime = (new Date()).getTime() - startTime;
+        System.err.println("Time after creating interpolated" +
+                " arrays: " + elapsedTime);
+
+        printAllMaterials();
+    }
+
+    private static void createInterpolatedEnergyArray() {
+        for (int id : mId) {
+            Material m = materials.get(id);
+            if (!m.hasBeenInterpolated) continue;
+            ArrayList<Double> dos = m.getDos();
+            ArrayList<Double> energy = m.getEnergy();
+            ArrayList<Double> interpolatedEnergy = new ArrayList<>();
+            double maxDos;
+            double minDos;
+            try {
+                maxDos = Collections.max(dos);
+                minDos = Collections.min(dos);
+            } catch (NoSuchElementException e) {
+                System.err.println("Material " + m.getMaterialId() + " " +
+                        "does not have a maximum or minimum dos value" +
+                        "after filtering.");
+                continue;
+            }
+
+            double dosIncrementor = (maxDos-minDos) / 101.0;
+            double dosValue = minDos;
+            PolynomialSplineFunction interpolatingFunction =
+                    m.getPsf2();
+            for (int i = 0 ; i < 100; i++) {
+                dosValue += dosIncrementor;
+                double interpolatedEnergyValue = 0.0;
+                try {
+                    interpolatedEnergyValue =
+                            interpolatingFunction.value(dosValue);
+                } catch (Exception e) {
+                    System.err.println("Interpolated value could" +
+                            " not be calculated for "
+                            + m.getMaterialId()
+                            + " at index " + i);
+                }
+                interpolatedEnergy.add(interpolatedEnergyValue);
+            }
+            m.setInterpolatedEnergy(interpolatedEnergy);
+        }
     }
 
     private static void interpolate() {
@@ -56,10 +107,16 @@ public class VectorDistance {
             double[] x = m.toPrimitive(m.getDos());
             SplineInterpolator si = new SplineInterpolator();
             LinearInterpolator li = new LinearInterpolator();
-            PolynomialSplineFunction psf = li.interpolate(x, y);
-            PolynomialSplineFunction psf2 = si.interpolate(x, y);
-            m.setPsf(psf);
-            m.setPsf2(psf2);
+            try {
+                PolynomialSplineFunction psf = li.interpolate(x, y);
+                PolynomialSplineFunction psf2 = si.interpolate(x, y);
+                m.setPsf(psf);
+                m.setPsf2(psf2);
+                m.hasBeenInterpolated = true;
+            } catch (Exception e) {
+                System.err.println("Material " + m.getMaterialId() + " " +
+                    "has too few points to be interpolated.");
+            }
         }
     }
 
@@ -235,14 +292,17 @@ public class VectorDistance {
 class Material {
     private ArrayList<Double> energy;
     private ArrayList<Double> dos;
+    private ArrayList<Double> interpolatedEnergy;
     private int materialId;
     private final double[] EMPTY_DOUBLE_ARRAY = {};
     private PolynomialSplineFunction psf;
     private PolynomialSplineFunction psf2;
+    public boolean hasBeenInterpolated = false;
 
     public Material(ArrayList<Double> energy,
                     ArrayList<Double> dos,
                     int materialId) {
+        interpolatedEnergy = new ArrayList<>();
         this.energy = energy;
         this.dos = dos;
         this.materialId = materialId;
@@ -284,6 +344,14 @@ class Material {
         this.dos = dos;
     }
 
+    public ArrayList<Double> getInterpolatedEnergy() {
+        return interpolatedEnergy;
+    }
+
+    public void setInterpolatedEnergy(ArrayList<Double> interpolatedEnergy) {
+        this.interpolatedEnergy = interpolatedEnergy;
+    }
+
     public double[] toPrimitive(ArrayList<Double> array) {
         if (array == null) {
             return null;
@@ -321,6 +389,21 @@ class Material {
                 " " + energy.size());
 
         stringBuilder.append("\n");
+
+        if (!interpolatedEnergy.isEmpty()) {
+            for (Double value : interpolatedEnergy) {
+                stringBuilder.append(value);
+                stringBuilder.append(" ");
+            }
+
+            stringBuilder.append("\n");
+            stringBuilder.append(interpolatedEnergy.size());
+            stringBuilder.append("\n");
+        } else {
+            stringBuilder.append("No interpolated energy for" +
+                    " " + materialId);
+            stringBuilder.append("\n");
+        }
 
         return stringBuilder.toString();
     }
