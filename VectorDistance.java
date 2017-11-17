@@ -18,6 +18,8 @@ public class VectorDistance {
             "/_cod_database_code/materials.txt";
     private static ArrayList<Integer> mId;
     private static HashMap<Integer, Material> materials;
+    private static final double MINIMUM_ENERGY_THRESHOLD = -1.0;
+    private static final double MAXIMUM_ENERGY_THRESHOLD = 1.0;
 
     public static void main(String[] args) throws IOException {
         long startTime = System.currentTimeMillis();
@@ -49,6 +51,57 @@ public class VectorDistance {
         elapsedTime = (new Date()).getTime() - startTime;
         System.err.println("Time after interpolation: " + elapsedTime);
 
+        try {
+            filterOnEnergyThreshold();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        elapsedTime = (new Date()).getTime() - startTime;
+        System.err.println("Time after energy filtering: " + elapsedTime);
+
+        for (int id : mId) {
+            Material m = materials.get(id);
+            System.err.println(m);
+        }
+
+    }
+
+    private static void filterOnEnergyThreshold() throws Exception {
+        for (int id : mId) {
+            Material m = materials.get(id);
+            ArrayList<Double> dos = m.getDos();
+            ArrayList<Double> energy = m.getEnergy();
+            ArrayList<Double> newDos = new ArrayList<>();
+            ArrayList<Double> newEnergy = new ArrayList<>();
+            if (dos.size() != energy.size()) {
+                System.err.println(
+                        "Energy and DOS vector " +
+                        "are of different" +
+                        "length");
+                throw new Exception();
+            }
+            for (int index = 0; index < energy.size(); index++) {
+                double dosValue = dos.get(index);
+                double energyValue = energy.get(index);
+                if (energyValue >= MINIMUM_ENERGY_THRESHOLD &&
+                        energyValue <= MAXIMUM_ENERGY_THRESHOLD) {
+                    newDos.add(dosValue);
+                    newEnergy.add(energyValue);
+                } else {
+                    continue;
+                }
+            }
+            if (dos.size() != energy.size()) {
+                System.err.println(
+                        "Energy and DOS vector " +
+                                "are of different" +
+                                "length");
+                throw new Exception();
+            }
+            m.setDos(newDos);
+            m.setEnergy(newEnergy);
+        }
     }
 
     private static HashMap<Integer, Material>
@@ -141,8 +194,8 @@ public class VectorDistance {
             ArrayList<Double> dos = m.getDos();
             ArrayList<Double> energy = m.getEnergy();
             for (int index = 0; index < dos.size(); index++) {
-                dosEnergyMap.put(
-                        dos.get(index),
+                    dosEnergyMap.put(
+                            dos.get(index),
                             energy.get(index));
             }
             Set<Double> dosSet = new HashSet<>();
