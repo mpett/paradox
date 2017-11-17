@@ -1,6 +1,7 @@
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -26,8 +27,10 @@ public class VectorDistance {
     public static void main(String[] args) throws IOException {
         long startTime = System.currentTimeMillis();
         long elapsedTime = 0L;
+
         mId = materialIndices(MATERIAL_IDS);
         materials = parseMaterials(mId);
+
         Set<Integer> keys = materials.keySet();
         System.err.println
                 ("Number of materials in hash map: " + keys.size());
@@ -35,6 +38,7 @@ public class VectorDistance {
         System.err.println("Time after parse: " + elapsedTime);
 
         unsortEnergy();
+
         elapsedTime = (new Date()).getTime() - startTime;
         System.err.println("Time after unsorting: " + elapsedTime);
 
@@ -45,33 +49,72 @@ public class VectorDistance {
         }
 
         elapsedTime = (new Date()).getTime() - startTime;
-        System.err.println("Time after energy filtering: " + elapsedTime);
+        System.err.println(
+                "Time after energy filtering: " + elapsedTime);
 
         interpolate();
 
-        elapsedTime = (new Date()).getTime() - startTime;
-        System.err.println("Time after interpolation: " + elapsedTime);
+        elapsedTime
+                = (new Date()).getTime() - startTime;
+        System.err.println(
+                "Time after interpolation: " + elapsedTime);
 
         createInterpolatedEnergyArray();
 
-        elapsedTime = (new Date()).getTime() - startTime;
-        System.err.println("Time after creating interpolated" +
+        elapsedTime
+                = (new Date()).getTime() - startTime;
+        System.err.println(
+                "Time after creating interpolated" +
                 " arrays: " + elapsedTime);
-
         //printAllMaterials();
 
         distances();
-        System.err.println("Time after calculating distances " + elapsedTime);
+
+        System.err.println(
+                "Time after calculating distances " + elapsedTime);
+
+        displayTopCandidatesOnInput();
     }
 
-    public static <K, V extends Comparable<? super V>> Map<K, V>
+    private static void displayTopCandidatesOnInput() throws IOException {
+        BufferedReader reader =
+                new BufferedReader(
+                        new InputStreamReader(System.in));
+        while (true) {
+            try {
+                int id = Integer.parseInt(reader.readLine());
+                if (id == 0) {
+                    reader.close();
+                    System.exit(0);
+                }
+                Material m = materials.get(id);
+                Map<Integer, Double> d = topCandidates(m);
+                for (int i : d.keySet()) {
+                    System.err.println(m.getMaterialId() + " dist "
+                            + i + " = " + d.get(i));
+                }
+            } catch (Exception e) {
+                System.err.println
+                        ("Not a valid id among the ones we have.");
+                continue;
+            }
+        }
+    }
+
+    private static Map<Integer, Double> topCandidates(Material m) {
+        HashMap<Integer, Double> distances = m.getDistances();
+        Map<Integer, Double> sortedMap = sortByValue(distances);
+        return sortedMap;
+    }
+
+    private static <K, V extends Comparable<? super V>> Map<K, V>
             sortByValue(Map<K, V> map) {
         return map.entrySet()
                 .stream()
                 .sorted(Map.Entry
                         .comparingByValue(
-                                Collections
-                                        .reverseOrder()))
+                               /* Collections
+                                        .reverseOrder()*/))
                 .collect(Collectors.toMap(
                         Map.Entry::getKey,
                         Map.Entry::getValue,
