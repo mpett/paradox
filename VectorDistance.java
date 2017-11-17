@@ -79,6 +79,7 @@ public class VectorDistance {
                 );
                 double d = eDistance.compute(firstMaterialEnergy,
                         secondMaterialEnergy);
+                m.setDistances(m2.getMaterialId(), d);
             }
         }
     }
@@ -321,15 +322,26 @@ class Material {
     private final double[] EMPTY_DOUBLE_ARRAY = {};
     private PolynomialSplineFunction psf;
     private PolynomialSplineFunction psf2;
+    private HashMap<Integer, Double> distances;
+
     public boolean hasBeenInterpolated = false;
 
     public Material(ArrayList<Double> energy,
                     ArrayList<Double> dos,
                     int materialId) {
+        distances = new HashMap<>();
         interpolatedEnergy = new ArrayList<>();
         this.energy = energy;
         this.dos = dos;
         this.materialId = materialId;
+    }
+
+    public void setDistances(int toMaterialId, double distance) {
+        distances.put(toMaterialId, distance);
+    }
+
+    public HashMap<Integer, Double> getDistances() {
+        return distances;
     }
 
     public void setPsf2(PolynomialSplineFunction psf2) {
