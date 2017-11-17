@@ -36,18 +36,6 @@ public class VectorDistance {
         elapsedTime = (new Date()).getTime() - startTime;
         System.err.println("Time after unsorting: " + elapsedTime);
 
-        for (int id : mId) {
-            Material m = materials.get(id);
-            double[] y = m.toPrimitive(m.getEnergy());
-            double[] x = m.toPrimitive(m.getDos());
-            SplineInterpolator si = new SplineInterpolator();
-            LinearInterpolator li = new LinearInterpolator();
-            PolynomialSplineFunction psf = li.interpolate(x, y);
-            PolynomialSplineFunction psf2 = si.interpolate(x, y);
-            m.setPsf(psf);
-            m.setPsf2(psf2);
-        }
-        
         elapsedTime = (new Date()).getTime() - startTime;
         System.err.println("Time after interpolation: " + elapsedTime);
 
@@ -59,12 +47,27 @@ public class VectorDistance {
 
         elapsedTime = (new Date()).getTime() - startTime;
         System.err.println("Time after energy filtering: " + elapsedTime);
+    }
 
+    private static void interpolate() {
+        for (int id : mId) {
+            Material m = materials.get(id);
+            double[] y = m.toPrimitive(m.getEnergy());
+            double[] x = m.toPrimitive(m.getDos());
+            SplineInterpolator si = new SplineInterpolator();
+            LinearInterpolator li = new LinearInterpolator();
+            PolynomialSplineFunction psf = li.interpolate(x, y);
+            PolynomialSplineFunction psf2 = si.interpolate(x, y);
+            m.setPsf(psf);
+            m.setPsf2(psf2);
+        }
+    }
+
+    private static void printAllMaterials() {
         for (int id : mId) {
             Material m = materials.get(id);
             System.err.println(m);
         }
-
     }
 
     private static void filterOnEnergyThreshold() throws Exception {
