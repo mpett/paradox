@@ -183,6 +183,14 @@ public class VectorDistance {
                 for(double v : dos)
                     writer.print(v + " ");
                 writer.println();
+                double[] intEnergy = m.toPrimitive(m.getInterpolatedEnergy());
+                double[] intDos = m.toPrimitive(m.getInterpolatedDos());
+                for (double v : intEnergy)
+                    writer.print(v + " ");
+                writer.println();
+                for (double v : intDos)
+                    writer.print(v + " ");
+                writer.println();
                 Map<Integer, Double> d = topCandidates(m);
                 int j = 0;
                 for (int i : d.keySet()) {
@@ -190,6 +198,23 @@ public class VectorDistance {
                     j++;
                     System.err.println(m.getMaterialId() + " dist "
                             + i + " = " + d.get(i));
+                    Material dm = materials.get(i);
+                    energy = dm.toPrimitive(dm.getEnergy());
+                    dos = dm.toPrimitive(dm.getDos());
+                    for (double v : energy)
+                        writer.print(v + " ");
+                    writer.println();
+                    for(double v : dos)
+                        writer.print(v + " ");
+                    writer.println();
+                    intEnergy = dm.toPrimitive(dm.getInterpolatedEnergy());
+                    intDos = dm.toPrimitive(dm.getInterpolatedDos());
+                    for (double v : intEnergy)
+                        writer.print(v + " ");
+                    writer.println();
+                    for (double v : intDos)
+                        writer.print(v + " ");
+                    writer.println();
 
                 }
                 writer.println();
