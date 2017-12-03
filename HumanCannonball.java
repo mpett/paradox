@@ -12,12 +12,44 @@ public class HumanCannonball {
                 new BufferedReader(
                         new InputStreamReader((
                                 System.in)));
-        tarifa();
+        zamka();
         reader.close();
     }
 
     private static int f(int n) {
         return 3*n;
+    }
+
+    private static void zamka() throws IOException {
+        int L = Integer.parseInt(reader.readLine());
+        int D = Integer.parseInt(reader.readLine());
+        int X = Integer.parseInt(reader.readLine());
+        int minResult = 0;
+        int maxResult = 0;
+        for (int N = L; N <= D; N++) {
+            if (digitSum(N) == X) {
+                minResult = N;
+                break;
+            }
+        }
+        for (int N = D; N >= L; N--) {
+            if (digitSum(N) == X) {
+                maxResult = N;
+                break;
+            }
+        }
+        System.out.println(minResult);
+        System.out.println(maxResult);
+    }
+
+    private static int digitSum(int n) {
+        int num = n;
+        int sum = 0;
+        while (num > 0) {
+            sum = sum + num % 10;
+            num = num / 10;
+        }
+        return sum;
     }
 
     private static void tarifa() throws IOException {

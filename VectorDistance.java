@@ -65,72 +65,9 @@ public class VectorDistance {
             System.err.println(m);
         }
 
-        /*
-
-        Material m1 = materials.get(4024256);
-        Material m2 = materials.get(4074432);
-        System.err.println(m1);
-        System.err.println(m2);
-        double[] m1dos = m1.toPrimitive(m1.getInterpolatedDos());
-        double[] m2dos = m2.toPrimitive(m2.getInterpolatedDos());
-        for (double v : m1dos)
-            System.err.print(v + " ");
-        System.err.println("");
-        for (double v : m2dos)
-            System.err.print(v + " ");
-        System.err.println("");
-        double distance = cosineSimilarity(m1dos,m2dos);
-        System.err.println(distance);
-
-        */
-
-
-
         distances2();
 
         displayTopCandidatesOnInput();
-
-        /*unsortEnergy();
-
-        elapsedTime = (new Date()).getTime() - startTime;
-        System.err.println("Time after unsorting: " + elapsedTime);
-
-        try {
-            filterOnEnergyThreshold();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        elapsedTime = (new Date()).getTime() - startTime;
-        System.err.println(
-                "Time after energy filtering: " + elapsedTime);
-
-        interpolate();
-
-        elapsedTime
-                = (new Date()).getTime() - startTime;
-        System.err.println(
-                "Time after interpolation: " + elapsedTime);
-
-        createInterpolatedEnergyArray();
-
-        elapsedTime
-                = (new Date()).getTime() - startTime;
-        System.err.println(
-                "Time after creating interpolated" +
-                " arrays: " + elapsedTime);
-        //printAllMaterials();
-
-        System.err.println("Calculating distances. Please stand by...");
-
-        distances();
-
-        elapsedTime
-                = (new Date()).getTime() - startTime;
-        System.err.println(
-                "Time after calculating distances " + elapsedTime);
-
-        displayTopCandidatesOnInput();*/
     }
 
     private static double cosineSimilarity(Material m1, Material m2) {
@@ -350,11 +287,11 @@ public class VectorDistance {
                 continue;
             }
 
-            double energyIncrementor = (maxEnergy - minEnergy) / 101.0;
+            double energyIncrementor = (maxEnergy - minEnergy) / 1001.0;
             double energyValue = minEnergy;
             PolynomialSplineFunction interpolatingFunction = m.getPsf();
 
-            for (int i = 0; i < 100; i++) {
+            for (int i = 0; i < 1000; i++) {
                 energyValue += energyIncrementor;
                 double interpolatedDosValue = 0.0;
                 try {
