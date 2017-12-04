@@ -12,12 +12,26 @@ public class HumanCannonball {
                 new BufferedReader(
                         new InputStreamReader((
                                 System.in)));
-        zamka();
+        drmMessages();
         reader.close();
     }
 
     private static int f(int n) {
         return 3*n;
+    }
+
+    private static void drmMessages() throws IOException {
+        String input = reader.readLine();
+        String firstHalf = input.substring(0, input.length()/2);
+        String secondHalf = input.substring(input.length()/2);
+        System.err.println(firstHalf + " " + secondHalf);
+        int sum = 0;
+        for (int index = 0; index < firstHalf.length(); index++) {
+            char characterAtIndex = firstHalf.charAt(index);
+            int asciiValue = (int) characterAtIndex;
+            sum += asciiValue - 65;
+        }
+        System.err.println(sum);
     }
 
     private static void zamka() throws IOException {

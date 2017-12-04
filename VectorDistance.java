@@ -6,7 +6,6 @@ import org.apache.commons.math3.analysis.interpolation.LinearInterpolator;
 import org.apache.commons.math3.analysis.interpolation.SplineInterpolator;
 import org.apache.commons.math3.analysis.polynomials.PolynomialSplineFunction;
 import org.apache.commons.math3.ml.distance.EuclideanDistance;
-import org.apache.commons.text.similarity.CosineSimilarity;
 
 public class VectorDistance {
     private static final String FILE_PATH =
@@ -56,42 +55,15 @@ public class VectorDistance {
         }
 
         interpolate();
-
         createInterpolatedDosArray();
-
 
         for (int key : keys) {
             Material m = materials.get(key);
             System.err.println(m);
         }
 
-        distances2();
-
+        distances();
         displayTopCandidatesOnInput();
-    }
-
-    private static double cosineSimilarity(Material m1, Material m2) {
-        CosineSimilarity dist = new CosineSimilarity();
-
-        String c1 = vectorToString(m1.getEnergy());
-        String c2 = vectorToString(m2.getEnergy());
-
-        Map<CharSequence, Integer> leftVector =
-                Arrays.stream(c1.split(""))
-                        .collect(Collectors.toMap(c -> c, c -> 1, Integer::sum));
-        Map<CharSequence, Integer> rightVector =
-                Arrays.stream(c2.split(""))
-                        .collect(Collectors.toMap(c -> c, c -> 1, Integer::sum));
-
-        return  (1 - dist.cosineSimilarity(leftVector,rightVector));
-    }
-
-    private static String vectorToString(ArrayList<Double> vector) {
-        StringBuilder stringBuilder = new StringBuilder();
-        for (double d : vector) {
-            stringBuilder.append(d);
-        }
-        return stringBuilder.toString();
     }
 
     private static void displayTopCandidatesOnInput() throws IOException {
@@ -100,7 +72,8 @@ public class VectorDistance {
                         new InputStreamReader(System.in));
         while (true) {
             try {
-                System.err.print("Would you kindly enter a Material ID: ");
+                System.err.print(
+                        "Would you kindly enter a Material ID: ");
                 int id = Integer.parseInt(reader.readLine());
                 System.err.println();
                 if (id == 0) {
@@ -111,7 +84,8 @@ public class VectorDistance {
                 System.err.println("--- EUCLIDEAN ---");
                 System.err.println("");
                 Material m = materials.get(id);
-                PrintWriter writer = new PrintWriter("vectors.txt", "UTF-8");
+                PrintWriter writer
+                        = new PrintWriter("vectors.txt", "UTF-8");
                 double[] energy = m.toPrimitive(m.getEnergy());
                 double[] dos = m.toPrimitive(m.getDos());
                 for (double v : energy)
@@ -120,8 +94,10 @@ public class VectorDistance {
                 for(double v : dos)
                     writer.print(v + " ");
                 writer.println();
-                double[] intEnergy = m.toPrimitive(m.getInterpolatedEnergy());
-                double[] intDos = m.toPrimitive(m.getInterpolatedDos());
+                double[] intEnergy
+                        = m.toPrimitive(m.getInterpolatedEnergy());
+                double[] intDos
+                        = m.toPrimitive(m.getInterpolatedDos());
                 for (double v : intEnergy)
                     writer.print(v + " ");
                 writer.println();
@@ -144,8 +120,10 @@ public class VectorDistance {
                     for(double v : dos)
                         writer.print(v + " ");
                     writer.println();
-                    intEnergy = dm.toPrimitive(dm.getInterpolatedEnergy());
-                    intDos = dm.toPrimitive(dm.getInterpolatedDos());
+                    intEnergy = dm.toPrimitive(
+                            dm.getInterpolatedEnergy());
+                    intDos = dm.toPrimitive(
+                            dm.getInterpolatedDos());
                     for (double v : intEnergy)
                         writer.print(v + " ");
                     writer.println();
@@ -204,14 +182,6 @@ public class VectorDistance {
         ));
     }
 
-    private static void writeVectorsToFile(double[] array, PrintWriter writer) throws IOException {
-        for (double value : array) {
-            writer.print(value + " ");
-        }
-        writer.println();
-        writer.close();
-    }
-
     private static double cosineSimilarity(double[] vectorA,
                                            double[] vectorB) {
         double dotProduct = 0.0;
@@ -226,45 +196,27 @@ public class VectorDistance {
                 (Math.sqrt(normA) * Math.sqrt(normB));
     }
 
-    private static void distances2() {
-        for (int id : mId) {
-            Material m = materials.get(id);
-            for (int id2 : mId) {
-                Material m2 = materials.get(id2);
-                EuclideanDistance euclideanDistance = new EuclideanDistance();
-                double[] firstMaterialDos = m.toPrimitive(m.getInterpolatedDos());
-                double[] secondMaterialDos = m2.toPrimitive(m2.getInterpolatedDos());
-                double d = euclideanDistance.compute(firstMaterialDos, secondMaterialDos);
-                m.setDistances(m2.getMaterialId(), d);
-                double cosineDistance = cosineSimilarity(firstMaterialDos, secondMaterialDos);
-                m.setCosineDistances(m2.getMaterialId(), cosineDistance);
-            }
-        }
-        System.err.println("Managed to calculate distances.");
-    }
-
     private static void distances() {
         for (int id : mId) {
             Material m = materials.get(id);
-            if (!m.hasBeenInterpolated) continue;
             for (int id2 : mId) {
                 Material m2 = materials.get(id2);
-                if(!m2.hasBeenInterpolated) continue;
-                EuclideanDistance eDistance = new EuclideanDistance();
-                double[] firstMaterialEnergy = m.toPrimitive(
-                        m.getInterpolatedEnergy()
-                );
-                double[] secondMaterialEnergy = m2.toPrimitive(
-                        m2.getInterpolatedEnergy()
-                );
-                double d = eDistance.compute(firstMaterialEnergy,
-                        secondMaterialEnergy);
+                EuclideanDistance euclideanDistance
+                        = new EuclideanDistance();
+                double[] firstMaterialDos
+                        = m.toPrimitive(m.getInterpolatedDos());
+                double[] secondMaterialDos
+                        = m2.toPrimitive(m2.getInterpolatedDos());
+                double d = euclideanDistance
+                        .compute(firstMaterialDos, secondMaterialDos);
                 m.setDistances(m2.getMaterialId(), d);
-
-                double cosineDistance = cosineSimilarity(m, m2);
-                m.setCosineDistances(m2.getMaterialId(), cosineDistance);
+                double cosineDistance
+                        = cosineSimilarity(firstMaterialDos, secondMaterialDos);
+                m.setCosineDistances
+                        (m2.getMaterialId(), cosineDistance);
             }
         }
+        System.err.println("Managed to calculate distances.");
     }
 
     private static void createInterpolatedDosArray() {
@@ -282,7 +234,8 @@ public class VectorDistance {
                 maxEnergy = Collections.max(energy);
                 minEnergy = Collections.min(energy);
             } catch (Exception e) {
-                System.err.println("Something went wrong for " + m.getMaterialId() + " " +
+                System.err.println("Something went wrong for "
+                        + m.getMaterialId() + " " +
                         "when collectung max/min energies");
                 continue;
             }
@@ -295,10 +248,11 @@ public class VectorDistance {
                 energyValue += energyIncrementor;
                 double interpolatedDosValue = 0.0;
                 try {
-                    interpolatedDosValue = interpolatingFunction.value(energyValue);
-                    if (interpolatedDosValue == 0.0) {
+                    interpolatedDosValue
+                            = interpolatingFunction
+                                .value(energyValue);
+                    if (interpolatedDosValue == 0.0)
                         interpolatedDosValue = 1.0;
-                    }
                 } catch (Exception e) {
                     System.err.println("Interpolated value could" +
                             " not be calculated for "
@@ -314,108 +268,28 @@ public class VectorDistance {
         }
     }
 
-    private static void createInterpolatedEnergyArray() {
-        for (int id : mId) {
-            Material m = materials.get(id);
-            if (!m.hasBeenInterpolated) continue;
-            ArrayList<Double> dos = m.getDos();
-            ArrayList<Double> energy = m.getEnergy();
-            ArrayList<Double> interpolatedEnergy = new ArrayList<>();
-            double maxDos;
-            double minDos;
-            try {
-                maxDos = Collections.max(dos);
-                minDos = Collections.min(dos);
-            } catch (NoSuchElementException e) {
-                System.err.println("Material " + m.getMaterialId() + " " +
-                        "does not have a maximum or minimum dos value" +
-                        "after filtering.");
-                continue;
-            }
-
-            double dosIncrementor = (maxDos-minDos) / 101.0;
-            double dosValue = minDos;
-            PolynomialSplineFunction interpolatingFunction =
-                    m.getPsf2();
-            for (int i = 0 ; i < 100; i++) {
-                dosValue += dosIncrementor;
-                double interpolatedEnergyValue = 0.0;
-                try {
-                    interpolatedEnergyValue =
-                            interpolatingFunction.value(dosValue);
-                } catch (Exception e) {
-                    System.err.println("Interpolated value could" +
-                            " not be calculated for "
-                            + m.getMaterialId()
-                            + " at index " + i);
-                }
-                interpolatedEnergy.add(interpolatedEnergyValue);
-            }
-            m.setInterpolatedEnergy(interpolatedEnergy);
-        }
-    }
-
     private static void interpolate() {
         for (int id : mId) {
             Material m = materials.get(id);
             double[] x = m.toPrimitive(m.getEnergy());
             double[] y = m.toPrimitive(m.getDos());
-            SplineInterpolator si = new SplineInterpolator();
-            LinearInterpolator li = new LinearInterpolator();
+            SplineInterpolator si
+                    = new SplineInterpolator();
+            LinearInterpolator li
+                    = new LinearInterpolator();
             try {
-                PolynomialSplineFunction psf = li.interpolate(x, y);
-                PolynomialSplineFunction psf2 = si.interpolate(x, y);
+                PolynomialSplineFunction psf
+                        = li.interpolate(x, y);
+                PolynomialSplineFunction psf2
+                        = si.interpolate(x, y);
                 m.setPsf(psf);
                 m.setPsf2(psf2);
                 m.hasBeenInterpolated = true;
             } catch (Exception e) {
-                System.err.println("Material " + m.getMaterialId() + " " +
+                System.err.println("Material "
+                        + m.getMaterialId() + " " +
                     "has too few points to be interpolated.");
             }
-        }
-    }
-
-    private static void printAllMaterials() {
-        for (int id : mId) {
-            Material m = materials.get(id);
-            System.err.println(m);
-        }
-    }
-
-    private static void filterOnEnergyThreshold() throws Exception {
-        for (int id : mId) {
-            Material m = materials.get(id);
-            ArrayList<Double> dos = m.getDos();
-            ArrayList<Double> energy = m.getEnergy();
-            ArrayList<Double> newDos = new ArrayList<>();
-            ArrayList<Double> newEnergy = new ArrayList<>();
-            if (dos.size() != energy.size()) {
-                System.err.println(
-                        "Energy and DOS vector " +
-                        "are of different" +
-                        "length");
-                throw new Exception();
-            }
-            for (int index = 0; index < energy.size(); index++) {
-                double dosValue = dos.get(index);
-                double energyValue = energy.get(index);
-                if (energyValue >= MINIMUM_ENERGY_THRESHOLD &&
-                        energyValue <= MAXIMUM_ENERGY_THRESHOLD) {
-                    newDos.add(dosValue);
-                    newEnergy.add(energyValue);
-                } else {
-                    continue;
-                }
-            }
-            if (dos.size() != energy.size()) {
-                System.err.println(
-                        "Energy and DOS vector " +
-                                "are of different" +
-                                "length");
-                throw new Exception();
-            }
-            m.setDos(newDos);
-            m.setEnergy(newEnergy);
         }
     }
 
@@ -441,6 +315,7 @@ public class VectorDistance {
                     sb.append(System.lineSeparator());
                     line = br.readLine();
                 }
+
                 String everything = sb.toString();
                 everything = everything.substring(7);
                 everything = everything.substring(0,
@@ -451,12 +326,11 @@ public class VectorDistance {
                         .substring(0, vectors[0].length()-4);
                 String[] dosSplit = dosString.split(", ");
                 String[] energySplit = energyString.split(", ");
-                for (String dos : dosSplit) {
+
+                for (String dos : dosSplit)
                     dosVector.add(Double.parseDouble(dos));
-                }
-                for (String energy : energySplit) {
+                for (String energy : energySplit)
                     energyVector.add(Double.parseDouble(energy));
-                }
                 br.close();
             } catch (Exception e) {
                 numberOfCatches++;
@@ -465,14 +339,13 @@ public class VectorDistance {
             }
             Material material =
                     new Material(energyVector, dosVector, materialId);
-
             materials.put(materialId, material);
         }
-        System.err.println(numberOfCatches + " could not be parsed.");
+        System.err.println(
+                numberOfCatches + " could not be parsed.");
 
-        for (int id : indicesToBeRemoved) {
+        for (int id : indicesToBeRemoved)
             mId.remove(new Integer(id));
-        }
 
         return materials;
     }
@@ -499,34 +372,6 @@ public class VectorDistance {
             br.close();
         }
         return materialIds;
-    }
-
-    private static void unsortEnergy() {
-        for (int materialId : mId) {
-            Material m = materials.get(materialId);
-            HashMap<Double, Double> dosEnergyMap =
-                    new HashMap<>();
-            ArrayList<Double> dos = m.getDos();
-            ArrayList<Double> energy = m.getEnergy();
-            for (int index = 0; index < dos.size(); index++) {
-                    dosEnergyMap.put(
-                            dos.get(index),
-                            energy.get(index));
-            }
-            Set<Double> dosSet = new HashSet<>();
-            dosSet.addAll(dos);
-            dos.clear();
-            dos.addAll(dosSet);
-            Collections.sort(dos);
-            ArrayList<Double> unsortedEngergy =
-                    new ArrayList<>();
-            for (double dosValue : dos) {
-                unsortedEngergy
-                        .add(dosEnergyMap.get(dosValue));
-            }
-            m.setEnergy(unsortedEngergy);
-            m.setDos(dos);
-        }
     }
 }
 
