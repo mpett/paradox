@@ -20,6 +20,7 @@ public class VectorDistance {
     private static HashMap<Integer, Material> materials;
     private static final double MINIMUM_ENERGY_THRESHOLD = -1.0;
     private static final double MAXIMUM_ENERGY_THRESHOLD = 1.0;
+    private static final int NUMBER_OF_INTERPOLATING_POINTS = 1000;
 
     public static void main(String[] args) throws IOException {
         long startTime = System.currentTimeMillis();
@@ -244,7 +245,7 @@ public class VectorDistance {
             double energyValue = minEnergy;
             PolynomialSplineFunction interpolatingFunction = m.getPsf();
 
-            for (int i = 0; i < 1000; i++) {
+            for (int i = 0; i < NUMBER_OF_INTERPOLATING_POINTS; i++) {
                 energyValue += energyIncrementor;
                 double interpolatedDosValue = 0.0;
                 try {
