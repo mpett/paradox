@@ -1,6 +1,7 @@
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -12,12 +13,53 @@ public class HumanCannonball {
                 new BufferedReader(
                         new InputStreamReader((
                                 System.in)));
-        drmMessages();
+        beekeeper();
         reader.close();
     }
 
     private static int f(int n) {
         return 3*n;
+    }
+
+    private static void beekeeper() throws IOException {
+        String vowels = "aeiouy";
+        while (true) {
+            int N = Integer.parseInt(reader.readLine());
+            HashMap<String, Integer> result = new HashMap<>();
+            if (N == 0) break;
+            for (int index = 0; index < N; index++) {
+                String word = reader.readLine();
+                int doubleVowelCounter = 0;
+                for (int charIndex = 0; charIndex
+                        < word.length() - 1; charIndex++) {
+                    String currentCharacter = word.charAt(charIndex) + "";
+                    String nextCharacter = word.charAt(charIndex + 1) + "";
+                    if (vowels.contains(currentCharacter)
+                            && vowels.contains(nextCharacter))
+                        doubleVowelCounter++;
+                }
+                result.put(word, doubleVowelCounter);
+            }
+            String resultingString = Collections.max(result.entrySet(),
+                    Comparator.comparingInt(Map.Entry::getValue)).getKey();
+            System.out.println(resultingString);
+        }
+    }
+
+    private static void candidate() throws IOException {
+        int N = Integer.parseInt(reader.readLine());
+        for (int index = 0; index < N; index++) {
+            String input = reader.readLine();
+            if (input.contains("+")) {
+                String plus = "\\+";
+                String[] split = input.split(plus);
+                int sum = Integer.parseInt(split[0])
+                        + Integer.parseInt(split[1]);
+                System.out.println(sum);
+            } else {
+                System.out.println("skipped");
+            }
+        }
     }
 
     private static void drmMessages() throws IOException {
