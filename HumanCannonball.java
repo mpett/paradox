@@ -13,12 +13,31 @@ public class HumanCannonball {
                 new BufferedReader(
                         new InputStreamReader((
                                 System.in)));
-        beekeeper();
+        icpawards();
         reader.close();
     }
 
     private static int f(int n) {
         return 3*n;
+    }
+
+    private static void icpawards() throws IOException {
+        int N = Integer.parseInt(reader.readLine());
+        String winners = "";
+        int numberOfWinners = 12;
+        int counter = 0;
+        for (int index = 0; index < N; index++) {
+            if (counter == numberOfWinners) break;
+            String team = reader.readLine();
+            String university = team.split(" ")[0];
+            if (winners.contains(university))
+                continue;
+            else {
+                winners += team + "\n";
+                counter++;
+            }
+        }
+        System.out.println(winners);
     }
 
     private static void beekeeper() throws IOException {
@@ -34,9 +53,11 @@ public class HumanCannonball {
                         < word.length() - 1; charIndex++) {
                     String currentCharacter = word.charAt(charIndex) + "";
                     String nextCharacter = word.charAt(charIndex + 1) + "";
-                    if (vowels.contains(currentCharacter)
-                            && vowels.contains(nextCharacter))
-                        doubleVowelCounter++;
+                    if (currentCharacter.equals(nextCharacter)) {
+                        if (vowels.contains(currentCharacter)
+                                && vowels.contains(nextCharacter))
+                            doubleVowelCounter++;
+                    }
                 }
                 result.put(word, doubleVowelCounter);
             }
