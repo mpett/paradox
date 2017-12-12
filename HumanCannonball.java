@@ -13,12 +13,27 @@ public class HumanCannonball {
                 new BufferedReader(
                         new InputStreamReader((
                                 System.in)));
-        icpawards();
+        filip();
         reader.close();
     }
 
     private static int f(int n) {
         return 3*n;
+    }
+
+    private static void filip() throws IOException {
+        String input = reader.readLine();
+        String[] split = input.split(" ");
+        String firstReversed = new StringBuilder(split[0])
+                .reverse().toString();
+        String secondReversed = new StringBuilder(split[1])
+                .reverse().toString();
+        int firstNumber = Integer.parseInt(firstReversed);
+        int secondNumber = Integer.parseInt(secondReversed);
+        if (firstNumber > secondNumber)
+            System.out.println(firstNumber);
+        else
+            System.out.println(secondNumber);
     }
 
     private static void icpawards() throws IOException {
