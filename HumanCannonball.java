@@ -14,12 +14,20 @@ public class HumanCannonball {
                 new BufferedReader(
                         new InputStreamReader((
                                 System.in)));
-        quickBrownFox();
+        quickEstimates();
         reader.close();
     }
 
     private static int f(int n) {
         return 3*n;
+    }
+
+    private static void quickEstimates() throws IOException {
+        int N = Integer.parseInt(reader.readLine());
+        for (int index = 0; index < N; index++) {
+            String cost = reader.readLine();
+            System.out.println(cost.length());
+        }
     }
 
     private static void quickBrownFox() throws IOException {
@@ -30,7 +38,8 @@ public class HumanCannonball {
             String missing = "";
             for (int charIndex = 0; charIndex
                     < alphabet.length(); charIndex++) {
-                String character = alphabet.charAt(charIndex) + "";
+                String character
+                        = alphabet.charAt(charIndex) + "";
                 if (!input.contains(character)) {
                     missing += character;
                 }
