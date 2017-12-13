@@ -14,12 +14,24 @@ public class HumanCannonball {
                 new BufferedReader(
                         new InputStreamReader((
                                 System.in)));
-        quickEstimates();
+        deathKnight();
         reader.close();
     }
 
     private static int f(int n) {
         return 3*n;
+    }
+
+    private static void deathKnight() throws IOException {
+        int N = Integer.parseInt(reader.readLine());
+        String losingSequence = "CD";
+        int counter = 0;
+        for (int battle = 0; battle < N; battle++) {
+            String sequence = reader.readLine();
+            if (sequence.contains(losingSequence))
+                counter++;
+        }
+        System.out.println(N - counter);
     }
 
     private static void quickEstimates() throws IOException {
