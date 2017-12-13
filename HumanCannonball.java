@@ -4,6 +4,7 @@ import java.io.InputStreamReader;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.IntStream;
 
 public class HumanCannonball {
     static BufferedReader reader;
@@ -13,12 +14,40 @@ public class HumanCannonball {
                 new BufferedReader(
                         new InputStreamReader((
                                 System.in)));
-        filip();
+        cd();
         reader.close();
     }
 
     private static int f(int n) {
         return 3*n;
+    }
+
+    /**
+     * Wrong answer on test case 2/2
+     * @throws IOException
+     */
+    private static void cd() throws IOException {
+        String firstLineInput = reader.readLine();
+        String[] split = firstLineInput.split(" ");
+        int N = Integer.parseInt(split[0]);
+        int M = Integer.parseInt(split[1]);
+        if (N == 0 || M == 0) {
+            System.out.println(0);
+            System.exit(0);
+        }
+        int[] jacks = new int[N];
+        for (int index = 0; index < N; index++) {
+            int cd = Integer.parseInt(reader.readLine());
+            jacks[index] = cd;
+        }
+        int counter = 0;
+        for (int index = 0; index < M; index++) {
+            int cd = Integer.parseInt(reader.readLine());
+            boolean contains
+                    = IntStream.of(jacks).anyMatch(x -> x == cd);
+            if (contains) counter++;
+        }
+        System.out.println(counter);
     }
 
     private static void filip() throws IOException {
