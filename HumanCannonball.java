@@ -40,6 +40,7 @@ public class HumanCannonball {
         for (String element : permutation)
             stringBuilder.append(element + " ");
         String result = stringBuilder.toString();
+        result = method(result);
         System.out.println(result);
     }
 
@@ -52,6 +53,14 @@ public class HumanCannonball {
             permutation.remove(firstIndex);
         }
         return permutation;
+    }
+
+    public static String method(String str) {
+        if (str != null && str.length() > 0
+                && str.charAt(str.length() - 1) == ' ') {
+            str = str.substring(0, str.length() - 1);
+        }
+        return str;
     }
 
     private static void deathKnight() throws IOException {
