@@ -14,12 +14,44 @@ public class HumanCannonball {
                 new BufferedReader(
                         new InputStreamReader((
                                 System.in)));
-        deathKnight();
+        leftRotation();
         reader.close();
     }
 
     private static int f(int n) {
         return 3*n;
+    }
+
+    private static void leftRotation() throws IOException {
+        String parameters = reader.readLine();
+        String[] splitParameters = parameters.split(" ");
+        int n = Integer.parseInt(splitParameters[0]);
+        int k = Integer.parseInt((splitParameters[1]));
+        String array = reader.readLine();
+        ArrayList<String> permutation = new ArrayList<>();
+        for (int charIndex = 0; charIndex <
+                array.length(); charIndex += 2) {
+            String character
+                    = array.charAt(charIndex) + "";
+            permutation.add(character);
+        }
+        permutation = permute(permutation, k);
+        StringBuilder stringBuilder = new StringBuilder();
+        for (String element : permutation)
+            stringBuilder.append(element + " ");
+        String result = stringBuilder.toString();
+        System.out.println(result);
+    }
+
+    private static ArrayList<String>
+        permute(ArrayList<String> permutation, int k) {
+        for (int index = 0; index < k; index++) {
+            int firstIndex = 0;
+            String character = permutation.get(firstIndex);
+            permutation.add(character);
+            permutation.remove(firstIndex);
+        }
+        return permutation;
     }
 
     private static void deathKnight() throws IOException {
