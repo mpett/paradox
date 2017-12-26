@@ -14,12 +14,36 @@ public class HumanCannonball {
                 new BufferedReader(
                         new InputStreamReader((
                                 System.in)));
-        makingAnagrams();
+        loopSeries();
         reader.close();
     }
 
     private static int f(int n) {
         return 3*n;
+    }
+
+    private static void loopSeries() throws IOException {
+        int q = Integer.parseInt(reader.readLine());
+        for (int query = 0; query < q; query++) {
+            String input = reader.readLine();
+            String[] inputs = input.split(" ");
+            int a = Integer.parseInt(inputs[0]);
+            int b = Integer.parseInt(inputs[1]);
+            int n = Integer.parseInt(inputs[2]);
+            int sum = 0;
+            for (int i = 0; i < n; i++) {
+                sum += a;
+                for (int j = 0; j < i; j++) {
+                    int partial =
+                            (int) Math.pow(2.0,
+                                    (double) j);
+                    partial *= b;
+                    sum += partial;
+                    System.out.print(sum + " ");
+                }
+                System.out.println();
+            }
+        }
     }
 
     private static void makingAnagrams() throws IOException {
@@ -35,6 +59,12 @@ public class HumanCannonball {
             (String firstString, String secondString) {
         int[] firstArray = fillArray(firstString);
         int[] secondArray = fillArray(secondString);
+        for (int e : firstArray)
+            System.err.print(e + " ");
+        System.err.println("");
+        for (int e : secondArray)
+            System.err.print(e + " ");
+        System.err.println("");
         int deletions = 0;
         for (int i = 0; i < 26; i++) {
             deletions +=
