@@ -14,12 +14,43 @@ public class HumanCannonball {
                 new BufferedReader(
                         new InputStreamReader((
                                 System.in)));
-        secondLeftRotation();
+        makingAnagrams();
         reader.close();
     }
 
     private static int f(int n) {
         return 3*n;
+    }
+
+    private static void makingAnagrams() throws IOException {
+        String firstString = reader.readLine();
+        String secondString = reader.readLine();
+        int result
+                = numberNeededForDeletion
+                    (firstString, secondString);
+        System.out.println(result);
+    }
+
+    private static int numberNeededForDeletion
+            (String firstString, String secondString) {
+        int[] firstArray = fillArray(firstString);
+        int[] secondArray = fillArray(secondString);
+        int deletions = 0;
+        for (int i = 0; i < 26; i++) {
+            deletions +=
+                    Math.abs(firstArray[i]
+                            - secondArray[i]);
+        }
+        return deletions;
+    }
+
+    private static int[] fillArray(String inputString) {
+        int[] array = new int[26];
+        for (int i = 0; i < inputString.length(); i++) {
+            char ch = inputString.charAt(i);
+            array[ch - 'a']++;
+        }
+        return array;
     }
 
     private static int[]
@@ -37,6 +68,10 @@ public class HumanCannonball {
         return a;
     }
 
+    /**
+     * Wrong answer on both first and second.
+     * @throws IOException
+     */
     private static void secondLeftRotation() throws IOException {
         String parameters = reader.readLine();
         String[] splitParameters = parameters.split(" ");
