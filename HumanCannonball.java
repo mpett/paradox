@@ -14,12 +14,65 @@ public class HumanCannonball {
                 new BufferedReader(
                         new InputStreamReader((
                                 System.in)));
-        leftRotation();
+        secondLeftRotation();
         reader.close();
     }
 
     private static int f(int n) {
         return 3*n;
+    }
+
+    private static int[]
+        performSecondRotation(int[] a, int k) {
+        for (int j = 0; j < k; j++) {
+            int n = a.length;
+            int[] b = new int[n];
+            b[n-1] = a[0];
+            for (int i = 1; i < n; i++) {
+                int c = a[i];
+                b[i-1] = c;
+            }
+            a = b;
+        }
+        return a;
+    }
+
+    private static void secondLeftRotation() throws IOException {
+        String parameters = reader.readLine();
+        String[] splitParameters = parameters.split(" ");
+        int n = Integer.parseInt(splitParameters[0]);
+        int k = Integer.parseInt(splitParameters[1]);
+        String inputString = reader.readLine();
+        int[] numberArray = new int[n];
+        String[] inputArray = inputString.split(" ");
+        for (int index = 0; index < n; index++) {
+            numberArray[index]
+                    = Integer.parseInt(inputArray[index]);
+        }
+        numberArray = performSecondRotation(numberArray, k);
+        StringBuilder stringBuilder = new StringBuilder();
+        for (int element : numberArray) {
+            stringBuilder.append(element);
+            stringBuilder.append(" ");
+        }
+        String result = stringBuilder.toString();
+        String outputString = method(result);
+        System.out.println(outputString);
+    }
+
+    private static int[]
+        performRotation(int[] a, int k) {
+        for (int i = 0; i < k; i++) {
+            int n = a.length;
+            int b = a[0];
+            int e = a[1];
+            a[0] = e;
+            a[n-1] = b;
+            for (int q : a)
+                System.err.print(q + " ");
+            System.err.println("");
+        }
+        return a;
     }
 
     private static void leftRotation() throws IOException {
