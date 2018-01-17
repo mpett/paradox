@@ -1,6 +1,12 @@
+import com.mysql.jdbc.Connection;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.sql.DriverManager;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -9,12 +15,34 @@ import java.util.stream.IntStream;
 public class HumanCannonball {
     static BufferedReader reader;
     public static void main(String[] args)
-            throws IOException {
+            throws IOException, ClassNotFoundException, SQLException {
         reader =
                 new BufferedReader(
                         new InputStreamReader((
                                 System.in)));
-        loopSeries();
+        //loopSeries();
+
+        Class.forName("com.mysql.jdbc.Driver");
+
+        java.sql.Connection connection
+                = DriverManager.getConnection
+                ("jdbc:mysql://localhost/omdb",
+                        "root", "man3.pett");
+        String test_query = "select material_id from materials";
+        Statement statement = connection.createStatement();
+        ResultSet rs = statement.executeQuery(test_query);
+
+        String[] arr = null;
+        while (rs.next()) {
+            String em = rs.getString("material_id");
+            arr = em.split("\n");
+            for (int i =0; i < arr.length; i++){
+                System.out.println(arr[i]);
+            }
+        }
+
+        connection.close();
+
         reader.close();
     }
 

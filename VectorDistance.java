@@ -1,4 +1,8 @@
 import java.io.*;
+import java.sql.DriverManager;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -18,11 +22,11 @@ public class VectorDistance {
             "/_cod_database_code/materials.txt";
     private static ArrayList<Integer> mId;
     private static HashMap<Integer, Material> materials;
-    private static final double MINIMUM_ENERGY_THRESHOLD = -1.0;
+    private static final double MINIMUM_ENERGY_THRESHOLD = -2.0;
     private static final double MAXIMUM_ENERGY_THRESHOLD = 1.0;
     private static final int NUMBER_OF_INTERPOLATING_POINTS = 1000;
 
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) throws IOException, SQLException, ClassNotFoundException {
         long startTime = System.currentTimeMillis();
         long elapsedTime = 0L;
 
@@ -42,6 +46,7 @@ public class VectorDistance {
             ArrayList<Double> dos = m.getDos();
             ArrayList<Double> nE = new ArrayList<>();
             ArrayList<Double> nD = new ArrayList<>();
+            double maximum = getHVBFromDatabase(m.getMaterialId());
             int i = 0;
             for (double value : energy) {
                 if (value >= MINIMUM_ENERGY_THRESHOLD
@@ -59,12 +64,56 @@ public class VectorDistance {
         createInterpolatedDosArray();
 
         for (int key : keys) {
+            System.err.println(key);
             Material m = materials.get(key);
             System.err.println(m);
         }
 
         distances();
         displayTopCandidatesOnInput();
+    }
+
+    private static double getHVBFromDatabase(int codCode)
+            throws IOException, ClassNotFoundException, SQLException {
+        Class.forName("com.mysql.jdbc.Driver");
+
+        java.sql.Connection connection
+                = DriverManager.getConnection
+                ("jdbc:mysql://localhost/omdb",
+                        "root", "man3.pett");
+
+        String idQuery = "select material_id " +
+                "from materials " +
+                "where _cod_database_code="
+                + codCode;
+        Statement statement = connection.createStatement();
+        ResultSet rs = statement.executeQuery(idQuery);
+
+        String materialId = "";
+        while (rs.next()) {
+            String em =
+                    rs.getString
+                            ("material_id");
+            materialId = em;
+        }
+
+        String hvbQuery = "select HVB_E " +
+                "from materials_dft " +
+                "where material_id="
+                + materialId;
+        statement = connection.createStatement();
+        rs = statement.executeQuery(hvbQuery);
+
+        String hvb = "";
+        while (rs.next()) {
+            String em =
+                    rs.getString
+                            ("HVB_E");
+            hvb = em;
+        }
+        connection.close();
+        double resultingHVB = Double.parseDouble(hvb);
+        return resultingHVB;
     }
 
     private static void displayTopCandidatesOnInput() throws IOException {
