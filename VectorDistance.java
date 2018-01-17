@@ -22,7 +22,7 @@ public class VectorDistance {
             "/_cod_database_code/materials.txt";
     private static ArrayList<Integer> mId;
     private static HashMap<Integer, Material> materials;
-    private static final double MINIMUM_ENERGY_THRESHOLD = -2.0;
+    private static final double MINIMUM_ENERGY_THRESHOLD = -5.0;
     private static final double MAXIMUM_ENERGY_THRESHOLD = 1.0;
     private static final int NUMBER_OF_INTERPOLATING_POINTS = 1000;
 
@@ -46,11 +46,13 @@ public class VectorDistance {
             ArrayList<Double> dos = m.getDos();
             ArrayList<Double> nE = new ArrayList<>();
             ArrayList<Double> nD = new ArrayList<>();
-            double maximum = getHVBFromDatabase(m.getMaterialId());
+            double hvbE = getHVBFromDatabase(m.getMaterialId());
+            double maximum = hvbE;
+            double minimum = Math.abs(hvbE) * -2.0;
             int i = 0;
             for (double value : energy) {
-                if (value >= MINIMUM_ENERGY_THRESHOLD
-                        && value <= MAXIMUM_ENERGY_THRESHOLD) {
+                if (value >= minimum
+                        && value <= maximum) {
                     nE.add(value);
                     nD.add(dos.get(i));
                 }
@@ -450,74 +452,6 @@ class Material {
         this.materialId = materialId;
     }
 
-    public void setInterpolatedDos(ArrayList<Double> interpolatedDos) {
-        this.interpolatedDos = interpolatedDos;
-    }
-
-    public ArrayList<Double> getInterpolatedDos() {
-        return interpolatedDos;
-    }
-
-    public void setCosineDistances(int toMaterialId, double distance) {
-        cosineDistances.put(toMaterialId, distance);
-    }
-
-    public HashMap<Integer, Double> getCosineDistances() {
-        return cosineDistances;
-    }
-
-    public void setDistances(int toMaterialId, double distance) {
-        distances.put(toMaterialId, distance);
-    }
-
-    public HashMap<Integer, Double> getDistances() {
-        return distances;
-    }
-
-    public void setPsf2(PolynomialSplineFunction psf2) {
-        this.psf2 = psf2;
-    }
-
-    public PolynomialSplineFunction getPsf2() {
-        return psf2;
-    }
-
-    public void setPsf(PolynomialSplineFunction psf) {
-        this.psf = psf;
-    }
-
-    public PolynomialSplineFunction getPsf() {
-        return psf;
-    }
-
-    public int getMaterialId() {
-        return materialId;
-    }
-
-    public ArrayList<Double> getDos() {
-        return dos;
-    }
-
-    public ArrayList<Double> getEnergy() {
-        return energy;
-    }
-
-    public void setEnergy(ArrayList<Double> energy) {
-        this.energy = energy;
-    }
-
-    public void setDos(ArrayList<Double> dos) {
-        this.dos = dos;
-    }
-
-    public ArrayList<Double> getInterpolatedEnergy() {
-        return interpolatedEnergy;
-    }
-
-    public void setInterpolatedEnergy(ArrayList<Double> interpolatedEnergy) {
-        this.interpolatedEnergy = interpolatedEnergy;
-    }
-
     public double[] toPrimitive(ArrayList<Double> array) {
         if (array == null) {
             return null;
@@ -585,5 +519,73 @@ class Material {
         }
 
         return stringBuilder.toString();
+    }
+
+    public void setInterpolatedDos(ArrayList<Double> interpolatedDos) {
+        this.interpolatedDos = interpolatedDos;
+    }
+
+    public ArrayList<Double> getInterpolatedDos() {
+        return interpolatedDos;
+    }
+
+    public void setCosineDistances(int toMaterialId, double distance) {
+        cosineDistances.put(toMaterialId, distance);
+    }
+
+    public HashMap<Integer, Double> getCosineDistances() {
+        return cosineDistances;
+    }
+
+    public void setDistances(int toMaterialId, double distance) {
+        distances.put(toMaterialId, distance);
+    }
+
+    public HashMap<Integer, Double> getDistances() {
+        return distances;
+    }
+
+    public void setPsf2(PolynomialSplineFunction psf2) {
+        this.psf2 = psf2;
+    }
+
+    public PolynomialSplineFunction getPsf2() {
+        return psf2;
+    }
+
+    public void setPsf(PolynomialSplineFunction psf) {
+        this.psf = psf;
+    }
+
+    public PolynomialSplineFunction getPsf() {
+        return psf;
+    }
+
+    public int getMaterialId() {
+        return materialId;
+    }
+
+    public ArrayList<Double> getDos() {
+        return dos;
+    }
+
+    public ArrayList<Double> getEnergy() {
+        return energy;
+    }
+
+    public void setEnergy(ArrayList<Double> energy) {
+        this.energy = energy;
+    }
+
+    public void setDos(ArrayList<Double> dos) {
+        this.dos = dos;
+    }
+
+    public ArrayList<Double> getInterpolatedEnergy() {
+        return interpolatedEnergy;
+    }
+
+    public void setInterpolatedEnergy(ArrayList<Double> interpolatedEnergy) {
+        this.interpolatedEnergy = interpolatedEnergy;
     }
 }
