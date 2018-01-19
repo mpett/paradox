@@ -22,11 +22,14 @@ public class VectorDistance {
             "/_cod_database_code/materials.txt";
     private static ArrayList<Integer> mId;
     private static HashMap<Integer, Material> materials;
-    private static final double MINIMUM_ENERGY_THRESHOLD = -5.0;
+    private static final double MINIMUM_ENERGY_THRESHOLD = -1.0;
     private static final double MAXIMUM_ENERGY_THRESHOLD = 1.0;
     private static final int NUMBER_OF_INTERPOLATING_POINTS = 1000;
+    private static final boolean PLOT_EUCLIDEAN = true;
+    private static final boolean PLOT_COSINE = false;
 
-    public static void main(String[] args) throws IOException, SQLException, ClassNotFoundException {
+    public static void main(String[] args) throws IOException,
+            SQLException, ClassNotFoundException {
         long startTime = System.currentTimeMillis();
         long elapsedTime = 0L;
 
@@ -48,7 +51,7 @@ public class VectorDistance {
             ArrayList<Double> nD = new ArrayList<>();
             double hvbE = getHVBFromDatabase(m.getMaterialId());
             double maximum = hvbE;
-            double minimum = Math.abs(hvbE) * -2.0;
+            double minimum = maximum - 2.0;
             int i = 0;
             for (double value : energy) {
                 if (value >= minimum
@@ -156,6 +159,7 @@ public class VectorDistance {
                 for (double v : intDos)
                     writer.print(v + " ");
                 writer.println();
+
                 Map<Integer, Double> d = topCandidates(m);
                 int j = 0;
                 for (int i : d.keySet()) {
@@ -163,29 +167,29 @@ public class VectorDistance {
                     j++;
                     System.err.println(m.getMaterialId() + " dist "
                             + i + " = " + d.get(i));
-                    Material dm = materials.get(i);
-                    energy = dm.toPrimitive(dm.getEnergy());
-                    dos = dm.toPrimitive(dm.getDos());
-                    for (double v : energy)
-                        writer.print(v + " ");
-                    writer.println();
-                    for(double v : dos)
-                        writer.print(v + " ");
-                    writer.println();
-                    intEnergy = dm.toPrimitive(
-                            dm.getInterpolatedEnergy());
-                    intDos = dm.toPrimitive(
-                            dm.getInterpolatedDos());
-                    for (double v : intEnergy)
-                        writer.print(v + " ");
-                    writer.println();
-                    for (double v : intDos)
-                        writer.print(v + " ");
-                    writer.println();
-
+                    if (PLOT_EUCLIDEAN) {
+                        Material dm = materials.get(i);
+                        energy = dm.toPrimitive(dm.getEnergy());
+                        dos = dm.toPrimitive(dm.getDos());
+                        for (double v : energy)
+                            writer.print(v + " ");
+                        writer.println();
+                        for(double v : dos)
+                            writer.print(v + " ");
+                        writer.println();
+                        intEnergy = dm.toPrimitive(
+                                dm.getInterpolatedEnergy());
+                        intDos = dm.toPrimitive(
+                                dm.getInterpolatedDos());
+                        for (double v : intEnergy)
+                            writer.print(v + " ");
+                        writer.println();
+                        for (double v : intDos)
+                            writer.print(v + " ");
+                        writer.println();
+                    }
                 }
-                writer.println();
-                writer.close();
+
                 System.err.println("");
                 System.err.println("--- COSINE ---");
                 System.err.println("");
@@ -197,7 +201,30 @@ public class VectorDistance {
                     k++;
                     System.err.println(m.getMaterialId() + " dist "
                             + i + " = " + c.get(i));
+                    if (PLOT_COSINE) {
+                        Material dm = materials.get(i);
+                        energy = dm.toPrimitive(dm.getEnergy());
+                        dos = dm.toPrimitive(dm.getDos());
+                        for (double v : energy)
+                            writer.print(v + " ");
+                        writer.println();
+                        for(double v : dos)
+                            writer.print(v + " ");
+                        writer.println();
+                        intEnergy = dm.toPrimitive(
+                                dm.getInterpolatedEnergy());
+                        intDos = dm.toPrimitive(
+                                dm.getInterpolatedDos());
+                        for (double v : intEnergy)
+                            writer.print(v + " ");
+                        writer.println();
+                        for (double v : intDos)
+                            writer.print(v + " ");
+                        writer.println();
+                    }
                 }
+                writer.println();
+                writer.close();
             } catch (Exception e) {
                 System.err.println
                         ("Not a valid id among the ones we have.");
