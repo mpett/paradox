@@ -20,13 +20,36 @@ public class VectorDistance {
             = "/Users/martinpettersson" +
             "/diraclaravel/data/materials" +
             "/_cod_database_code/materials.txt";
+
     private static ArrayList<Integer> mId;
     private static HashMap<Integer, Material> materials;
+    private static final int NUMBER_OF_INTERPOLATING_POINTS = 1000;
+
+    /**
+     * If anyone of these are set to true we will
+     * write a file called vectors.txt which
+     * can be plotted in plots.py
+     * We will only plot the results from the
+     * top candidates.
+     * Original data and interpolated data will
+     * both be plotted.
+     */
+    private static final boolean PLOT_EUCLIDEAN = false;
+    private static final boolean PLOT_COSINE = true;
+
+    /**
+     * If static window size is set to false,
+     * we are comparing windows based on their
+     * HVB_E values, i.e. from HVB_E - 2.0 to HVB_E
+     * for each corresponding material.
+     */
+    private static final boolean STATIC_WINDOW_SIZE = true;
+
+    /**
+     * The range of the static window if used.
+     */
     private static final double MINIMUM_ENERGY_THRESHOLD = -1.0;
     private static final double MAXIMUM_ENERGY_THRESHOLD = 1.0;
-    private static final int NUMBER_OF_INTERPOLATING_POINTS = 1000;
-    private static final boolean PLOT_EUCLIDEAN = true;
-    private static final boolean PLOT_COSINE = false;
 
     public static void main(String[] args) throws IOException,
             SQLException, ClassNotFoundException {
@@ -52,6 +75,12 @@ public class VectorDistance {
             double hvbE = getHVBFromDatabase(m.getMaterialId());
             double maximum = hvbE;
             double minimum = maximum - 2.0;
+
+            if (STATIC_WINDOW_SIZE) {
+                maximum = MAXIMUM_ENERGY_THRESHOLD;
+                minimum = MINIMUM_ENERGY_THRESHOLD;
+            }
+
             int i = 0;
             for (double value : energy) {
                 if (value >= minimum
