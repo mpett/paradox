@@ -26,6 +26,16 @@ public class VectorDistance {
     private static final int NUMBER_OF_INTERPOLATING_POINTS = 1000;
 
     /**
+     * Database credentials.
+     */
+    private static final String DATABASE_URL
+            = "jdbc:mysql://localhost/omdb";
+    private static final String DATABASE_USER
+            = "root";
+    private static final String DATABASE_PASSWORD
+            = "man3.pett";
+
+    /**
      * If anyone of these are set to true we will
      * write a file called vectors.txt which
      * can be plotted in plots.py
@@ -34,8 +44,8 @@ public class VectorDistance {
      * Original data and interpolated data will
      * both be plotted.
      */
-    private static final boolean PLOT_EUCLIDEAN = false;
-    private static final boolean PLOT_COSINE = true;
+    private static final boolean PLOT_EUCLIDEAN = true;
+    private static final boolean PLOT_COSINE = false;
 
     /**
      * If static window size is set to false,
@@ -43,7 +53,7 @@ public class VectorDistance {
      * HVB_E values, i.e. from HVB_E - 2.0 to HVB_E
      * for each corresponding material.
      */
-    private static final boolean STATIC_WINDOW_SIZE = true;
+    private static final boolean STATIC_WINDOW_SIZE = false;
 
     /**
      * The range of the static window if used.
@@ -113,8 +123,9 @@ public class VectorDistance {
 
         java.sql.Connection connection
                 = DriverManager.getConnection
-                ("jdbc:mysql://localhost/omdb",
-                        "root", "man3.pett");
+                (DATABASE_URL,
+                        DATABASE_USER,
+                            DATABASE_PASSWORD);
 
         String idQuery = "select material_id " +
                 "from materials " +
