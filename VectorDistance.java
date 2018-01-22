@@ -107,11 +107,30 @@ public class VectorDistance {
         interpolate();
         createInterpolatedDosArray();
 
+        ArrayList<Integer> keysToBeRemoved
+                = new ArrayList<>();
+        ArrayList<Integer> indicesToBeRemoved
+                = new ArrayList<>();
+
+        int keyIndex = 0;
         for (int key : keys) {
-            System.err.println(key);
-            Material m = materials.get(key);
-            System.err.println(m);
+            keyIndex++;
+            try {
+                System.err.println(key);
+                Material m = materials.get(key);
+                System.err.println(m);
+            } catch (NullPointerException e) {
+                keysToBeRemoved.add(key);
+                indicesToBeRemoved.add(keyIndex);
+            }
         }
+
+        for (int keyToBeRemoved : keysToBeRemoved) {
+            materials.remove(keyToBeRemoved);
+        }
+
+        for (int indexToBeRemoved : indicesToBeRemoved)
+            mId.remove(indexToBeRemoved);
 
         distances();
         displayTopCandidatesOnInput();
