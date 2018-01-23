@@ -44,8 +44,8 @@ public class VectorDistance {
      * Original data and interpolated data will
      * both be plotted.
      */
-    private static final boolean PLOT_EUCLIDEAN = true;
-    private static final boolean PLOT_COSINE = false;
+    private static final boolean PLOT_EUCLIDEAN = false;
+    private static final boolean PLOT_COSINE = true;
 
     /**
      * If static window size is set to false,
@@ -132,8 +132,10 @@ public class VectorDistance {
         for (int indexToBeRemoved : indicesToBeRemoved)
             mId.remove(indexToBeRemoved);
 
-        distances();
-        displayTopCandidatesOnInput();
+        //distances();
+        distances(7006119);
+        //displayTopCandidatesOnInput();
+        topCandidatesOnParameter(7006119);
     }
 
     private static double getHVBFromDatabase(int codCode)
@@ -178,6 +180,106 @@ public class VectorDistance {
         connection.close();
         double resultingHVB = Double.parseDouble(hvb);
         return resultingHVB;
+    }
+
+    private static void topCandidatesOnParameter(int codId) throws IOException {
+        try {
+            int id = codId;
+            System.err.println("");
+            System.err.println("--- EUCLIDEAN ---");
+            System.err.println("");
+            Material m = materials.get(id);
+            PrintWriter writer
+                    = new PrintWriter("vectors.txt", "UTF-8");
+            double[] energy = m.toPrimitive(m.getEnergy());
+            double[] dos = m.toPrimitive(m.getDos());
+            for (double v : energy)
+                writer.print(v + " ");
+            writer.println();
+            for(double v : dos)
+                writer.print(v + " ");
+            writer.println();
+            double[] intEnergy
+                    = m.toPrimitive(m.getInterpolatedEnergy());
+            double[] intDos
+                    = m.toPrimitive(m.getInterpolatedDos());
+            for (double v : intEnergy)
+                writer.print(v + " ");
+            writer.println();
+            for (double v : intDos)
+                writer.print(v + " ");
+            writer.println();
+
+            Map<Integer, Double> d = topCandidates(m);
+            int j = 0;
+            for (int i : d.keySet()) {
+                if (j > 20) break;
+                j++;
+                System.err.println(m.getMaterialId() + " dist "
+                        + i + " = " + d.get(i));
+                if (PLOT_EUCLIDEAN) {
+                    Material dm = materials.get(i);
+                    energy = dm.toPrimitive(dm.getEnergy());
+                    dos = dm.toPrimitive(dm.getDos());
+                    for (double v : energy)
+                        writer.print(v + " ");
+                    writer.println();
+                    for(double v : dos)
+                        writer.print(v + " ");
+                    writer.println();
+                    intEnergy = dm.toPrimitive(
+                            dm.getInterpolatedEnergy());
+                    intDos = dm.toPrimitive(
+                            dm.getInterpolatedDos());
+                    for (double v : intEnergy)
+                        writer.print(v + " ");
+                    writer.println();
+                    for (double v : intDos)
+                        writer.print(v + " ");
+                    writer.println();
+                }
+            }
+
+            System.err.println("");
+            System.err.println("--- COSINE ---");
+            System.err.println("");
+
+            Map<Integer, Double> c = topCosineCandidates(m);
+            int k = 0;
+            for (int i : c.keySet()) {
+                if (k > 20) break;
+                k++;
+                System.err.println(m.getMaterialId() + " dist "
+                        + i + " = " + c.get(i));
+                if (PLOT_COSINE) {
+                    Material dm = materials.get(i);
+                    energy = dm.toPrimitive(dm.getEnergy());
+                    dos = dm.toPrimitive(dm.getDos());
+                    for (double v : energy)
+                        writer.print(v + " ");
+                    writer.println();
+                    for(double v : dos)
+                        writer.print(v + " ");
+                    writer.println();
+                    intEnergy = dm.toPrimitive(
+                            dm.getInterpolatedEnergy());
+                    intDos = dm.toPrimitive(
+                            dm.getInterpolatedDos());
+                    for (double v : intEnergy)
+                        writer.print(v + " ");
+                    writer.println();
+                    for (double v : intDos)
+                        writer.print(v + " ");
+                    writer.println();
+                }
+            }
+            writer.println();
+            writer.close();
+        } catch (Exception e) {
+            System.err.println
+                    ("Not a valid id among the ones we have.");
+        }
+
     }
 
     private static void displayTopCandidatesOnInput() throws IOException {
@@ -338,23 +440,59 @@ public class VectorDistance {
         for (int id : mId) {
             Material m = materials.get(id);
             for (int id2 : mId) {
+
                 Material m2 = materials.get(id2);
                 EuclideanDistance euclideanDistance
                         = new EuclideanDistance();
                 double[] firstMaterialDos
-                        = m.toPrimitive(m.getInterpolatedDos());
+                        = m.toPrimitive
+                            (m.getInterpolatedDos());
                 double[] secondMaterialDos
-                        = m2.toPrimitive(m2.getInterpolatedDos());
+                        = m2.toPrimitive
+                            (m2.getInterpolatedDos());
                 double d = euclideanDistance
-                        .compute(firstMaterialDos, secondMaterialDos);
+                        .compute
+                                (firstMaterialDos,
+                                        secondMaterialDos);
+
                 m.setDistances(m2.getMaterialId(), d);
+
                 double cosineDistance
-                        = cosineSimilarity(firstMaterialDos, secondMaterialDos);
+                        = cosineSimilarity
+                            (firstMaterialDos,
+                                    secondMaterialDos);
                 m.setCosineDistances
-                        (m2.getMaterialId(), cosineDistance);
+                        (m2.getMaterialId(),
+                                cosineDistance);
             }
         }
         System.err.println("Managed to calculate distances.");
+    }
+
+    private static void distances(int codId) {
+        Material m = materials.get(codId);
+        for (int id2 : mId) {
+            Material m2 = materials.get(id2);
+            EuclideanDistance euclideanDistance
+                    = new EuclideanDistance();
+            double[] firstMaterialDos
+                    = m.toPrimitive(
+                            m.getInterpolatedDos());
+            double[] secondMaterialDos
+                    = m2.toPrimitive(
+                            m2.getInterpolatedDos());
+            double d = euclideanDistance
+                    .compute(firstMaterialDos,
+                            secondMaterialDos);
+            m.setDistances(m2.getMaterialId(), d);
+            double cosineDistance
+                    = cosineSimilarity(firstMaterialDos,
+                        secondMaterialDos);
+            m.setCosineDistances
+                    (m2.getMaterialId(), cosineDistance);
+        }
+        System.err.println("Managed to calculate " +
+                "distances for " + codId + ".");
     }
 
     private static void createInterpolatedDosArray() {
