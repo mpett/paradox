@@ -21,6 +21,21 @@ public class VectorDistance {
             "/diraclaravel/data/materials" +
             "/_cod_database_code/materials.txt";
 
+    /**
+     * Use these paths instead for access to a larger
+     * dataset, around 4 or 5000 materials.
+     */
+
+    /*
+    private static final String FILE_PATH =
+            "/Users/martinpettersson/matcher" +
+                    "/materials/_cod_database_code/";
+    private static final String MATERIAL_IDS
+            = "/Users/martinpettersson/matcher" +
+            "/materials/_cod_database_code" +
+            "/materials.txt";
+    */
+
     private static ArrayList<Integer> mId;
     private static HashMap<Integer, Material> materials;
     private static final int NUMBER_OF_INTERPOLATING_POINTS = 1000;
@@ -190,7 +205,8 @@ public class VectorDistance {
             System.err.println("");
             Material m = materials.get(id);
             PrintWriter writer
-                    = new PrintWriter("vectors.txt", "UTF-8");
+                    = new PrintWriter
+                        ("vectors.txt", "UTF-8");
             double[] energy = m.toPrimitive(m.getEnergy());
             double[] dos = m.toPrimitive(m.getDos());
             for (double v : energy)
@@ -301,7 +317,8 @@ public class VectorDistance {
                 System.err.println("");
                 Material m = materials.get(id);
                 PrintWriter writer
-                        = new PrintWriter("vectors.txt", "UTF-8");
+                        = new PrintWriter
+                            ("vectors.txt", "UTF-8");
                 double[] energy = m.toPrimitive(m.getEnergy());
                 double[] dos = m.toPrimitive(m.getDos());
                 for (double v : energy)
@@ -384,6 +401,7 @@ public class VectorDistance {
                         writer.println();
                     }
                 }
+
                 writer.println();
                 writer.close();
             } catch (Exception e) {
