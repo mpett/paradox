@@ -12,6 +12,7 @@ import org.apache.commons.math3.analysis.polynomials.PolynomialSplineFunction;
 import org.apache.commons.math3.ml.distance.EuclideanDistance;
 
 public class VectorDistance {
+    /*
     private static final String FILE_PATH =
             "/Users/martinpettersson/diraclaravel" +
                     "/data/materials/_cod_database_code" +
@@ -20,13 +21,12 @@ public class VectorDistance {
             = "/Users/martinpettersson" +
             "/diraclaravel/data/materials" +
             "/_cod_database_code/materials.txt";
+    */
 
     /**
      * Use these paths instead for access to a larger
      * dataset, around 4 or 5000 materials.
      */
-
-    /*
     private static final String FILE_PATH =
             "/Users/martinpettersson/matcher" +
                     "/materials/_cod_database_code/";
@@ -34,7 +34,6 @@ public class VectorDistance {
             = "/Users/martinpettersson/matcher" +
             "/materials/_cod_database_code" +
             "/materials.txt";
-    */
 
     private static ArrayList<Integer> mId;
     private static HashMap<Integer, Material> materials;
@@ -59,8 +58,8 @@ public class VectorDistance {
      * Original data and interpolated data will
      * both be plotted.
      */
-    private static final boolean PLOT_EUCLIDEAN = false;
-    private static final boolean PLOT_COSINE = true;
+    private static final boolean PLOT_EUCLIDEAN = true;
+    private static final boolean PLOT_COSINE = false;
 
     /**
      * If static window size is set to false,
@@ -87,6 +86,7 @@ public class VectorDistance {
         Set<Integer> keys = materials.keySet();
         System.err.println
                 ("Number of materials in hash map: " + keys.size());
+        int numberOfMaterialIds = mId.size();
         elapsedTime = (new Date()).getTime() - startTime;
         System.err.println("Time after parse: " + elapsedTime);
 
@@ -148,9 +148,13 @@ public class VectorDistance {
             mId.remove(indexToBeRemoved);
 
         //distances();
-        distances(7006119);
+        distances(2203590);
         //displayTopCandidatesOnInput();
-        topCandidatesOnParameter(7006119);
+        topCandidatesOnParameter(2203590);
+
+        System.err.println
+                ("Number of materials in hash map: " + keys.size());
+        System.err.println("Number of id:s in file: " + numberOfMaterialIds);
     }
 
     private static double getHVBFromDatabase(int codCode)
@@ -490,24 +494,29 @@ public class VectorDistance {
     private static void distances(int codId) {
         Material m = materials.get(codId);
         for (int id2 : mId) {
-            Material m2 = materials.get(id2);
-            EuclideanDistance euclideanDistance
-                    = new EuclideanDistance();
-            double[] firstMaterialDos
-                    = m.toPrimitive(
-                            m.getInterpolatedDos());
-            double[] secondMaterialDos
-                    = m2.toPrimitive(
-                            m2.getInterpolatedDos());
-            double d = euclideanDistance
-                    .compute(firstMaterialDos,
-                            secondMaterialDos);
-            m.setDistances(m2.getMaterialId(), d);
-            double cosineDistance
-                    = cosineSimilarity(firstMaterialDos,
+            try {
+                Material m2 = materials.get(id2);
+                EuclideanDistance euclideanDistance
+                        = new EuclideanDistance();
+                double[] firstMaterialDos
+                        = m.toPrimitive(
+                        m.getInterpolatedDos());
+                double[] secondMaterialDos
+                        = m2.toPrimitive(
+                        m2.getInterpolatedDos());
+                double d = euclideanDistance
+                        .compute(firstMaterialDos,
+                                secondMaterialDos);
+                m.setDistances(m2.getMaterialId(), d);
+                double cosineDistance
+                        = cosineSimilarity(firstMaterialDos,
                         secondMaterialDos);
-            m.setCosineDistances
-                    (m2.getMaterialId(), cosineDistance);
+                m.setCosineDistances
+                        (m2.getMaterialId(), cosineDistance);
+            } catch (NullPointerException e) {
+                System.err.println("There was a nullpointer" +
+                        "for id " + id2);
+            }
         }
         System.err.println("Managed to calculate " +
                 "distances for " + codId + ".");
