@@ -454,8 +454,11 @@ public class VectorDistance {
             normA += Math.pow(vectorA[i], 2);
             normB += Math.pow(vectorB[i], 2);
         }
-        return dotProduct /
-                (Math.sqrt(normA) * Math.sqrt(normB));
+
+        double result = Math.acos(dotProduct /
+                (Math.sqrt(normA) * Math.sqrt(normB)));
+
+        return result;
     }
 
     private static void distances() {
