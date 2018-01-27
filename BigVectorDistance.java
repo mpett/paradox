@@ -22,9 +22,9 @@ public class BigVectorDistance {
      * Database credentials.
      */
     private static final String OMDB_URL
-            = "jdbc:mysql://localhost/omdb";
+            = "jdbc:mysql://localhost/omdb?autoReconnect=true&useSSL=false";
     private static final String VECTORS_URL
-            = "jdbc:mysql://localhost/vectors";
+            = "jdbc:mysql://localhost/vectors?autoReconnect=true&useSSL=false";
     private static final String DATABASE_USER
             = "root";
     private static final String DATABASE_PASSWORD
@@ -32,9 +32,11 @@ public class BigVectorDistance {
 
     private static ArrayList<Integer> mId;
 
-    public static void main(String[] args) throws SQLException {
+    public static void main(String[] args) throws SQLException, ClassNotFoundException {
         System.err.println("Hello World");
 
+        dropAllTables();
+        createDatabaseTables();
 
         try {
             mId = materialIndices(MATERIAL_IDS);
@@ -49,7 +51,6 @@ public class BigVectorDistance {
         }
 
 
-        //createDatabaseTables();
     }
 
     private static ArrayList<Integer> materialIndices(String fileName)
@@ -74,6 +75,22 @@ public class BigVectorDistance {
             br.close();
         }
         return materialIds;
+    }
+
+    private static void dropAllTables() throws SQLException {
+        java.sql.Connection connection
+                = DriverManager.getConnection
+                (VECTORS_URL,
+                        DATABASE_USER,
+                        DATABASE_PASSWORD);
+        int numberOfTables = 23;
+        for (int index = 0; index < numberOfTables; index++) {
+            String updateStatement = "DROP TABLE dos_vectors_"
+                    + index + ";";
+            Statement statement = connection.createStatement();
+            statement.executeUpdate(updateStatement);
+        }
+        connection.close();
     }
 
     private static void createDatabaseTables() throws SQLException {
@@ -102,9 +119,9 @@ public class BigVectorDistance {
     }
 
     private static void
-    parseMaterials(ArrayList<Integer> indices) throws IOException, SQLException {
+    parseMaterials(ArrayList<Integer> indices) throws IOException, SQLException, ClassNotFoundException {
         int numberOfCatches = 0;
-        int counter = 0;
+        int counter = 1;
 
         java.sql.Connection connection
                 = DriverManager.getConnection
@@ -160,10 +177,19 @@ public class BigVectorDistance {
             String dosString = listToString(dosVector);
             String energyString = listToString(energyVector);
 
+            double hvb_e = 0.0;
+
+            try {
+                hvb_e = getHVBFromDatabase(materialId);
+            } catch (Exception e) {
+                System.err.println("Exception for material " + materialId);
+            }
+
+
 
             String updateStatement = "INSERT INTO dos_vectors_" + tableIndex + " " +
-                    "(cod_id, parsed_dos_vector, parsed_energy_vector)\n" +
-                    "VALUES (" + materialId + ", '"+ dosString + "', '" + energyString + "')";
+                    "(cod_id, parsed_dos_vector, parsed_energy_vector, hvb_e)\n" +
+                    "VALUES (" + materialId + ", '"+ dosString + "', '" + energyString + "', " + hvb_e + ")";
 
             Statement statement = connection.createStatement();
             statement.executeUpdate(updateStatement);
@@ -187,6 +213,50 @@ public class BigVectorDistance {
         for (double value : list)
             sb.append(value + " ");
         return sb.toString();
+    }
+
+    private static double getHVBFromDatabase(int codCode)
+            throws IOException, ClassNotFoundException, SQLException {
+        Class.forName("com.mysql.jdbc.Driver");
+
+        java.sql.Connection connection
+                = DriverManager.getConnection
+                (OMDB_URL,
+                        DATABASE_USER,
+                        DATABASE_PASSWORD);
+
+        String idQuery = "select material_id " +
+                "from materials " +
+                "where _cod_database_code="
+                + codCode;
+        Statement statement = connection.createStatement();
+        ResultSet rs = statement.executeQuery(idQuery);
+
+        String materialId = "";
+        while (rs.next()) {
+            String em =
+                    rs.getString
+                            ("material_id");
+            materialId = em;
+        }
+
+        String hvbQuery = "select HVB_E " +
+                "from materials_dft " +
+                "where material_id="
+                + materialId;
+        statement = connection.createStatement();
+        rs = statement.executeQuery(hvbQuery);
+
+        String hvb = "";
+        while (rs.next()) {
+            String em =
+                    rs.getString
+                            ("HVB_E");
+            hvb = em;
+        }
+        connection.close();
+        double resultingHVB = Double.parseDouble(hvb);
+        return resultingHVB;
     }
 
     private static void tmpPrintMaterial(ArrayList<Double> dos,
