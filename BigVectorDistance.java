@@ -51,8 +51,6 @@ public class BigVectorDistance {
         } catch (IOException e) {
             e.printStackTrace();
         }
-
-
     }
 
     private static ArrayList<Integer> materialIndices(String fileName)
@@ -111,6 +109,7 @@ public class BigVectorDistance {
                     "    parsed_dos_vector text,\n" +
                     "    interpolated_dos_vector text,\n" +
                     "    parsed_energy_vector text,\n" +
+                    "    interpolated_energy_vector text,\n" +
                     "    close_materials text,\n" +
                     "    hvb_e double\n" +
                     ");";
@@ -231,8 +230,6 @@ public class BigVectorDistance {
 
                 PolynomialSplineFunction interpolatingFunction = psf;
 
-
-
                 for (int j = 0; j < NUMBER_OF_INTERPOLATING_POINTS; j++) {
                     energyValue += energyIncrementor;
                     double interpolatedDosValue = 0.0;
@@ -253,8 +250,6 @@ public class BigVectorDistance {
 
                 }
 
-
-
             } catch (Exception e) {
                 System.err.println("Material "
                         + materialId + " " +
@@ -262,12 +257,14 @@ public class BigVectorDistance {
             }
 
             String intDosString = listToString(interpolatedDos);
+            String intEnergyString = listToString(interpolatedEnergy);
 
             String updateStatement = "INSERT INTO dos_vectors_" + tableIndex + " " +
                     "(cod_id, parsed_dos_vector, parsed_energy_vector, hvb_e" +
-                    ", interpolated_dos_vector)\n" +
+                    ", interpolated_dos_vector, interpolated_energy_vector)\n" +
                     "VALUES (" + materialId + ", '"+ dosString + "', '"
-                    + energyString + "', " + hvb_e + ", '" + intDosString + "')";
+                    + energyString + "', " + hvb_e + ", '" + intDosString + "'," +
+                    "'" + intEnergyString+ "')";
 
             Statement statement = connection.createStatement();
             statement.executeUpdate(updateStatement);
