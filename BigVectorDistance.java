@@ -32,6 +32,8 @@ public class BigVectorDistance {
 
     private static ArrayList<Integer> mId;
 
+    private static final int NUMBER_OF_INTERPOLATING_POINTS = 1000;
+
     public static void main(String[] args) throws SQLException, ClassNotFoundException {
         System.err.println("Hello World");
 
@@ -119,7 +121,8 @@ public class BigVectorDistance {
     }
 
     private static void
-    parseMaterials(ArrayList<Integer> indices) throws IOException, SQLException, ClassNotFoundException {
+    parseMaterials(ArrayList<Integer> indices) throws IOException,
+            SQLException, ClassNotFoundException {
         int numberOfCatches = 0;
         int counter = 1;
 
@@ -169,13 +172,6 @@ public class BigVectorDistance {
                 numberOfCatches++;
                 continue;
             }
-            /*
-            Material material =
-                    new Material(energyVector, dosVector, materialId);
-            materials.put(materialId, material);
-            */
-            //tmpPrintMaterial(dosVector, energyVector, materialId);
-
 
             double hvb_e = 0.0;
 
@@ -196,7 +192,10 @@ public class BigVectorDistance {
                 if (value >= minimum
                         && value <= maximum) {
                     filteredEnergy.add(value);
-                    filteredDos.add(dosVector.get(i));
+                    double dosValue = dosVector.get(i);
+                    if (dosValue == 0)
+                        dosValue++;
+                    filteredDos.add(dosValue);
                 }
                 i++;
             }
@@ -204,9 +203,71 @@ public class BigVectorDistance {
             String dosString = listToString(filteredDos);
             String energyString = listToString(filteredEnergy);
 
+            double[] x = toPrimitive(filteredEnergy);
+            double[] y = toPrimitive(filteredDos);
+
+            ArrayList<Double> interpolatedDos = new ArrayList<>();
+            ArrayList<Double> interpolatedEnergy = new ArrayList<>();
+
+            LinearInterpolator li
+                    = new LinearInterpolator();
+            try {
+                PolynomialSplineFunction psf
+                        = li.interpolate(x, y);
+                double maxEnergy = 0.0;
+                double minEnergy = 0.0;
+
+                try {
+                    maxEnergy = Collections.max(filteredEnergy);
+                    minEnergy = Collections.min(filteredEnergy);
+                } catch (Exception e) {
+                    System.err.println("Something went wrong for "
+                            + materialId + " " +
+                            "when collecting max/min energies");
+                }
+
+                double energyIncrementor = (maxEnergy - minEnergy) / 1001.0;
+                double energyValue = minEnergy;
+
+                PolynomialSplineFunction interpolatingFunction = psf;
+
+
+
+                for (int j = 0; j < NUMBER_OF_INTERPOLATING_POINTS; j++) {
+                    energyValue += energyIncrementor;
+                    double interpolatedDosValue = 0.0;
+                    try {
+                        interpolatedDosValue
+                                = interpolatingFunction
+                                .value(energyValue);
+                        if (interpolatedDosValue == 0.0)
+                            interpolatedDosValue = 1.0;
+                    } catch (Exception e) {
+                        System.err.println("Interpolated value could" +
+                                " not be calculated for "
+                                + materialId
+                                + " at index " + j);
+                    }
+                    interpolatedDos.add(interpolatedDosValue);
+                    interpolatedEnergy.add(energyValue);
+
+                }
+
+
+
+            } catch (Exception e) {
+                System.err.println("Material "
+                        + materialId + " " +
+                        "has too few points to be interpolated.");
+            }
+
+            String intDosString = listToString(interpolatedDos);
+
             String updateStatement = "INSERT INTO dos_vectors_" + tableIndex + " " +
-                    "(cod_id, parsed_dos_vector, parsed_energy_vector, hvb_e)\n" +
-                    "VALUES (" + materialId + ", '"+ dosString + "', '" + energyString + "', " + hvb_e + ")";
+                    "(cod_id, parsed_dos_vector, parsed_energy_vector, hvb_e" +
+                    ", interpolated_dos_vector)\n" +
+                    "VALUES (" + materialId + ", '"+ dosString + "', '"
+                    + energyString + "', " + hvb_e + ", '" + intDosString + "')";
 
             Statement statement = connection.createStatement();
             statement.executeUpdate(updateStatement);
@@ -225,6 +286,20 @@ public class BigVectorDistance {
         System.err.println(
                 numberOfCatches + " could not be parsed.");
         connection.close();
+    }
+
+    private static double[] toPrimitive(ArrayList<Double> array) {
+        double[] emptyArray = {};
+        if (array == null) {
+            return null;
+        } else if (array.size() == 0) {
+            return emptyArray;
+        }
+        final double[] result = new double[array.size()];
+        for (int i = 0; i < array.size(); i++) {
+            result[i] = array.get(i);
+        }
+        return result;
     }
 
     private static String listToString(ArrayList<Double> list) {
