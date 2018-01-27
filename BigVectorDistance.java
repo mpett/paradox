@@ -129,6 +129,7 @@ public class BigVectorDistance {
                         DATABASE_USER,
                         DATABASE_PASSWORD);
         int tableIndex = 0;
+        int missingHvbValues = 0;
 
         for (int materialId : indices) {
             ArrayList<Double> dosVector = new ArrayList<>();
@@ -174,18 +175,34 @@ public class BigVectorDistance {
             materials.put(materialId, material);
             */
             //tmpPrintMaterial(dosVector, energyVector, materialId);
-            String dosString = listToString(dosVector);
-            String energyString = listToString(energyVector);
+
 
             double hvb_e = 0.0;
 
             try {
                 hvb_e = getHVBFromDatabase(materialId);
             } catch (Exception e) {
-                System.err.println("Exception for material " + materialId);
+                missingHvbValues++;
             }
 
+            double maximum = hvb_e;
+            double minimum = hvb_e - 2.0;
 
+            ArrayList<Double> filteredDos = new ArrayList<>();
+            ArrayList<Double> filteredEnergy = new ArrayList<>();
+
+            int i = 0;
+            for (double value : energyVector) {
+                if (value >= minimum
+                        && value <= maximum) {
+                    filteredEnergy.add(value);
+                    filteredDos.add(dosVector.get(i));
+                }
+                i++;
+            }
+
+            String dosString = listToString(filteredDos);
+            String energyString = listToString(filteredEnergy);
 
             String updateStatement = "INSERT INTO dos_vectors_" + tableIndex + " " +
                     "(cod_id, parsed_dos_vector, parsed_energy_vector, hvb_e)\n" +
@@ -195,8 +212,10 @@ public class BigVectorDistance {
             statement.executeUpdate(updateStatement);
 
             counter++;
-            if (counter % 100 == 0)
+            if (counter % 100 == 0) {
                 System.err.println("Parsed " + counter);
+                System.err.println(missingHvbValues + " HVB_E values are missing.");
+            }
             if (counter % 1000 == 0) {
                 tableIndex++;
                 System.err.println("Updated table index to " + tableIndex);
