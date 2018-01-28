@@ -37,13 +37,14 @@ public class BigVectorDistance {
 
     private static final int NUMBER_OF_INTERPOLATING_POINTS = 1000;
 
+    private static final boolean COSINE = true;
+    private static final boolean EUCLIDEAN = false;
+
+
     public static void main(String[] args) throws SQLException,
-                                    ClassNotFoundException {
+            ClassNotFoundException, IOException {
         System.err.println("Hello World");
         //printResultSet();
-        calculateDistances(2212018);
-
-        /*
 
         dropAllTables();
         createDatabaseTables();
@@ -60,14 +61,14 @@ public class BigVectorDistance {
             e.printStackTrace();
         }
 
-        */
-
-
+        Map<Integer, Double> results
+                = calculateDistances(4026349);
+        writeForPlot(results, 4026349);
     }
 
     private static MaterialObject findMaterial(int codId) throws SQLException {
         MaterialObject result = null;
-        for (int tableIndex = 0; tableIndex <= NUMBER_OF_TABLES;
+        for (int tableIndex = 0; tableIndex < NUMBER_OF_TABLES;
                 tableIndex++) {
             java.sql.Connection connection
                     = DriverManager.getConnection
@@ -115,6 +116,55 @@ public class BigVectorDistance {
         return result;
     }
 
+    private static void writeForPlot(Map<Integer, Double> results,
+                                     int referenceCod)
+            throws SQLException, IOException {
+        PrintWriter writer
+                = new PrintWriter
+                ("vectors.txt", "UTF-8");
+        MaterialObject reference =
+                findMaterial(referenceCod);
+        double[] energy = reference.energy;
+        double[] dos = reference.dos;
+        for (double v : energy)
+            writer.print(v + " ");
+        writer.println();
+        for(double v : dos)
+            writer.print(v + " ");
+        writer.println();
+        Set<Integer> keySet =
+                results.keySet();
+        System.err.println("Wrote first line");
+        int c = 0;
+        for (int key : keySet) {
+            c++;
+            if (c==20) break;
+            System.err.println("Wrote "
+                    + c + " lines.");
+            MaterialObject m =
+                    findMaterial(key);
+            energy = m.energy;
+            dos = m.dos;
+            for (double v : energy)
+                writer.print(v + " ");
+            writer.println();
+            for(double v : dos)
+                writer.print(v + " ");
+            writer.println();
+        }
+        writer.close();
+    }
+
+    private static double euclideanSimilarity(double[] vectorA,
+                                              double[] vectorB) {
+        EuclideanDistance euclideanDistance
+                = new EuclideanDistance();
+        double distance = euclideanDistance
+                .compute
+                        (vectorA, vectorB);
+        return distance;
+    }
+
     private static double cosineSimilarity(double[] vectorA,
                                            double[] vectorB) {
         double dotProduct = 0.0;
@@ -136,7 +186,7 @@ public class BigVectorDistance {
         MaterialObject referenceMaterial = findMaterial(referenceCodId);
         HashMap<Integer, Double> similarities = new HashMap<>();
 
-        for (int tableIndex = 0; tableIndex <= NUMBER_OF_TABLES; tableIndex++) {
+        for (int tableIndex = 0; tableIndex < NUMBER_OF_TABLES; tableIndex++) {
             java.sql.Connection connection
                     = DriverManager.getConnection
                     (VECTORS_URL,
@@ -183,7 +233,16 @@ public class BigVectorDistance {
                     energy[i] = value;
                     i++;
                 }
-                double cosineDistance = cosineSimilarity(referenceMaterial.dos, dos);
+
+                double cosineDistance = 0.0;
+
+                if (COSINE) {
+                    cosineDistance
+                            = cosineSimilarity(referenceMaterial.dos, dos);
+                } else if (EUCLIDEAN) {
+                    cosineDistance
+                            = euclideanSimilarity(referenceMaterial.dos, dos);
+                }
 
                 if (Double.isNaN(cosineDistance)) {
                     cosineDistance = 0.0;
@@ -261,7 +320,7 @@ public class BigVectorDistance {
                 (VECTORS_URL,
                         DATABASE_USER,
                         DATABASE_PASSWORD);
-        int numberOfTables = 23;
+        int numberOfTables = NUMBER_OF_TABLES;
         for (int index = 0; index < numberOfTables; index++) {
             String updateStatement = "DROP TABLE dos_vectors_"
                     + index + ";";
