@@ -39,31 +39,31 @@ public class BigVectorDistance {
 
     private static final boolean COSINE = true;
     private static final boolean EUCLIDEAN = false;
+    private static final boolean REBUILD_DATABASE = false;
 
 
     public static void main(String[] args) throws SQLException,
             ClassNotFoundException, IOException {
-        System.err.println("Hello World");
-        //printResultSet();
+        if (REBUILD_DATABASE) {
+            dropAllTables();
+            createDatabaseTables();
 
-        dropAllTables();
-        createDatabaseTables();
+            try {
+                mId = materialIndices(MATERIAL_IDS);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
 
-        try {
-            mId = materialIndices(MATERIAL_IDS);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-        try {
-            parseMaterials(mId);
-        } catch (IOException e) {
-            e.printStackTrace();
+            try {
+                parseMaterials(mId);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
 
         Map<Integer, Double> results
-                = calculateDistances(4026349);
-        writeForPlot(results, 4026349);
+                = calculateDistances(2006985);
+        writeForPlot(results, 2006985);
     }
 
     private static MaterialObject findMaterial(int codId) throws SQLException {
@@ -475,7 +475,7 @@ public class BigVectorDistance {
                                 = interpolatingFunction
                                 .value(energyValue);
                         if (interpolatedDosValue == 0.0)
-                            interpolatedDosValue = 1.0;
+                            interpolatedDosValue = 0.0;
                     } catch (Exception e) {
                         System.err.println("Interpolated value could" +
                                 " not be calculated for "
