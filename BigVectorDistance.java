@@ -23,9 +23,11 @@ public class BigVectorDistance {
      * Database credentials.
      */
     private static final String OMDB_URL
-            = "jdbc:mysql://localhost/omdb?autoReconnect=true&useSSL=false";
+            = "jdbc:mysql://localhost/omdb?" +
+            "autoReconnect=true&useSSL=false";
     private static final String VECTORS_URL
-            = "jdbc:mysql://localhost/vectors?autoReconnect=true&useSSL=false";
+            = "jdbc:mysql://localhost/vectors?" +
+            "autoReconnect=true&useSSL=false";
     private static final String DATABASE_USER
             = "root";
     private static final String DATABASE_PASSWORD
@@ -70,8 +72,7 @@ public class BigVectorDistance {
                     = DriverManager.getConnection
                     (VECTORS_URL,
                             DATABASE_USER,
-                            DATABASE_PASSWORD);
-            System.err.println(tableIndex);
+                                 DATABASE_PASSWORD);
             String query = "Select interpolated_dos_vector" +
                             ", interpolated_energy_vector " +
                             "from dos_vectors_"
@@ -81,9 +82,37 @@ public class BigVectorDistance {
             Statement statement = connection.createStatement();
             ResultSet resultSet = statement.executeQuery(query);
             if (resultSet.next()) {
-                System.out.println(resultSet.getString(1));
-                System.out.println(resultSet.getString(2));
+                String dosVector = resultSet.getString(1);
+                String energyVector = resultSet.getString(2);
+                String[] dosSplit = dosVector.split(" ");
+                double[] dos = new double[dosSplit.length];
+                String[] energySplit = energyVector.split(" ");
+                double[] energy = new double[energySplit.length];
+                if (dos.length != energy.length) {
+                    System.err.println("Something is wrong with" +
+                            " vector lengths.");
+                    break;
+                }
+                int i = 0;
+                for (String element : dosSplit) {
+                    double value = Double.parseDouble(element);
+                    dos[i] = value;
+                    i++;
+                }
+                i = 0;
+                for (String element : energySplit) {
+                    double value = Double.parseDouble(element);
+                    energy[i] = value;
+                    i++;
+                }
                 System.out.println("Found in table " + tableIndex);
+                for (double v : dos)
+                    System.err.print(v + ", ");
+                System.err.println("");
+                for (double v : energy)
+                    System.err.print(v + ", ");
+                System.err.println("");
+                System.err.println(dos.length + " " + energy.length);
                 break;
             }
             connection.close();
