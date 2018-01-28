@@ -7,11 +7,12 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import org.apache.commons.math3.analysis.interpolation.LinearInterpolator;
-import org.apache.commons.math3.analysis.interpolation.SplineInterpolator;
 import org.apache.commons.math3.analysis.polynomials.PolynomialSplineFunction;
 import org.apache.commons.math3.ml.distance.EuclideanDistance;
 
 public class BigVectorDistance {
+    private static final int NUMBER_OF_TABLES = 22;
+
     private static final String FILE_PATH =
             "/Users/martinpettersson/materials/";
     private static final String MATERIAL_IDS
@@ -34,8 +35,13 @@ public class BigVectorDistance {
 
     private static final int NUMBER_OF_INTERPOLATING_POINTS = 1000;
 
-    public static void main(String[] args) throws SQLException, ClassNotFoundException {
+    public static void main(String[] args) throws SQLException,
+                                    ClassNotFoundException {
         System.err.println("Hello World");
+        //printResultSet();
+        findMaterial(7150965);
+
+        /*
 
         dropAllTables();
         createDatabaseTables();
@@ -51,6 +57,55 @@ public class BigVectorDistance {
         } catch (IOException e) {
             e.printStackTrace();
         }
+
+        */
+
+
+    }
+
+    private static void findMaterial(int codId) throws SQLException {
+        for (int tableIndex = 0; tableIndex < NUMBER_OF_TABLES;
+                tableIndex++) {
+            java.sql.Connection connection
+                    = DriverManager.getConnection
+                    (VECTORS_URL,
+                            DATABASE_USER,
+                            DATABASE_PASSWORD);
+            System.err.println(tableIndex);
+            String query = "Select interpolated_dos_vector" +
+                            ", interpolated_energy_vector " +
+                            "from dos_vectors_"
+                            + tableIndex +
+                            " where cod_id="
+                            + codId;
+            Statement statement = connection.createStatement();
+            ResultSet resultSet = statement.executeQuery(query);
+            if (resultSet.next()) {
+                System.out.println(resultSet.getString(1));
+                System.out.println(resultSet.getString(2));
+                System.out.println("Found in table " + tableIndex);
+                break;
+            }
+            connection.close();
+        }
+    }
+
+    private static void printResultSet() throws SQLException {
+        java.sql.Connection connection
+                = DriverManager.getConnection
+                (VECTORS_URL,
+                        DATABASE_USER,
+                        DATABASE_PASSWORD);
+        String query = "select cod_id, interpolated_dos_vector, " +
+                "interpolated_energy_vector from dos_vectors_18";
+        Statement statement = connection.createStatement();
+        ResultSet resultSet = statement.executeQuery(query);
+        System.err.println("Done");
+
+        while (resultSet.next()) {
+            System.out.println(resultSet.getString(1));
+        }
+        connection.close();
     }
 
     private static ArrayList<Integer> materialIndices(String fileName)
@@ -99,7 +154,7 @@ public class BigVectorDistance {
                 (VECTORS_URL,
                         DATABASE_USER,
                         DATABASE_PASSWORD);
-        int numberOfTables = 23;
+        int numberOfTables = NUMBER_OF_TABLES;
         for (int index = 0; index < numberOfTables; index++) {
             String updateStatement = "CREATE TABLE dos_vectors_"
                     + index + " (\n" +
@@ -348,22 +403,5 @@ public class BigVectorDistance {
         connection.close();
         double resultingHVB = Double.parseDouble(hvb);
         return resultingHVB;
-    }
-
-    private static void tmpPrintMaterial(ArrayList<Double> dos,
-                                         ArrayList<Double> energy,
-                                         int id) {
-        System.out.println("----- " + id + " -----");
-        StringBuilder sb = new StringBuilder();
-        for (double v : dos) {
-            sb.append(v + " ");
-        }
-        System.out.println(sb.toString());
-        sb = new StringBuilder();
-        for (double v : energy) {
-            sb.append(v + " ");
-        }
-        System.out.println(sb.toString());
-        System.out.println("----- " + id + " -----");
     }
 }
