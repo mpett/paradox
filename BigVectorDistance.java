@@ -41,7 +41,7 @@ public class BigVectorDistance {
                                     ClassNotFoundException {
         System.err.println("Hello World");
         //printResultSet();
-        findMaterial(7150965);
+        calculateDistances(2212018);
 
         /*
 
@@ -67,7 +67,7 @@ public class BigVectorDistance {
 
     private static MaterialObject findMaterial(int codId) throws SQLException {
         MaterialObject result = null;
-        for (int tableIndex = 0; tableIndex < NUMBER_OF_TABLES;
+        for (int tableIndex = 0; tableIndex <= NUMBER_OF_TABLES;
                 tableIndex++) {
             java.sql.Connection connection
                     = DriverManager.getConnection
@@ -115,22 +115,120 @@ public class BigVectorDistance {
         return result;
     }
 
-    private static void printResultSet() throws SQLException {
-        java.sql.Connection connection
-                = DriverManager.getConnection
-                (VECTORS_URL,
-                        DATABASE_USER,
-                        DATABASE_PASSWORD);
-        String query = "select cod_id, interpolated_dos_vector, " +
-                "interpolated_energy_vector from dos_vectors_18";
-        Statement statement = connection.createStatement();
-        ResultSet resultSet = statement.executeQuery(query);
-        System.err.println("Done");
-
-        while (resultSet.next()) {
-            System.out.println(resultSet.getString(1));
+    private static double cosineSimilarity(double[] vectorA,
+                                           double[] vectorB) {
+        double dotProduct = 0.0;
+        double normA = 0.0;
+        double normB = 0.0;
+        for (int i = 0; i < vectorA.length; i++) {
+            dotProduct += vectorA[i] * vectorB[i];
+            normA += Math.pow(vectorA[i], 2);
+            normB += Math.pow(vectorB[i], 2);
         }
-        connection.close();
+
+        double result = Math.acos(dotProduct /
+                (Math.sqrt(normA) * Math.sqrt(normB)));
+
+        return result;
+    }
+
+    private static Map<Integer, Double> calculateDistances(int referenceCodId) throws SQLException {
+        MaterialObject referenceMaterial = findMaterial(referenceCodId);
+        HashMap<Integer, Double> similarities = new HashMap<>();
+
+        for (int tableIndex = 0; tableIndex <= NUMBER_OF_TABLES; tableIndex++) {
+            java.sql.Connection connection
+                    = DriverManager.getConnection
+                    (VECTORS_URL,
+                            DATABASE_USER,
+                            DATABASE_PASSWORD);
+            String query = "select cod_id, interpolated_dos_vector, " +
+                    "interpolated_energy_vector from dos_vectors_" + tableIndex;
+            Statement statement = connection.createStatement();
+            ResultSet resultSet = statement.executeQuery(query);
+            System.err.print(tableIndex + " ");
+            HashMap<Integer, Double> tmpSimilarities = new HashMap<>();
+
+            while (resultSet.next()) {
+                int codId = resultSet.getInt(1);
+                String dosVector = resultSet.getString(2);
+                String energyVector = resultSet.getString(3);
+                String[] dosSplit = dosVector.split(" ");
+                double[] dos = new double[dosSplit.length];
+                String[] energySplit = energyVector.split(" ");
+                double[] energy = new double[energySplit.length];
+                if (dos.length != energy.length) {
+                    System.err.println("Something is wrong with" +
+                            " vector lengths.");
+                    break;
+                }
+                int i = 0;
+                try {
+                    for (String element : dosSplit) {
+                        double value = Double.parseDouble(element);
+                        dos[i] = value;
+                        i++;
+                    }
+                } catch (NumberFormatException e) {
+                    String removeQuery = "delete from dos_vectors_"
+                            + tableIndex + " where cod_id=" + codId;
+                    Statement removeStatement = connection.createStatement();
+                    removeStatement.executeUpdate(removeQuery);
+                    System.err.println("Removed " + codId + " due to blank element.");
+                    continue;
+                }
+                i = 0;
+                for (String element : energySplit) {
+                    double value = Double.parseDouble(element);
+                    energy[i] = value;
+                    i++;
+                }
+                double cosineDistance = cosineSimilarity(referenceMaterial.dos, dos);
+
+                if (Double.isNaN(cosineDistance)) {
+                    cosineDistance = 0.0;
+                }
+
+                tmpSimilarities.put(codId, cosineDistance);
+            }
+            connection.close();
+            Map<Integer, Double> sortedTmpSimilarities = sortByValue(tmpSimilarities);
+            int c = 0;
+            Set<Integer> keySet = sortedTmpSimilarities.keySet();
+            for (int key : keySet) {
+                c++;
+                if (c==20) break;
+                similarities.put(key, sortedTmpSimilarities.get(key));
+            }
+        }
+        System.err.println("");
+        Map<Integer, Double> result = sortByValue(similarities);
+        Set<Integer> keySet = result.keySet();
+        int c = 0;
+        for (int key : keySet) {
+            c++;
+            if (c==20) break;
+            System.err.println(referenceCodId +
+                    " dist " + key + " = " + similarities.get(key));
+        }
+        System.err.println("done");
+        return result;
+    }
+
+    private static <K, V extends Comparable<? super V>> Map<K, V>
+    sortByValue(Map<K, V> map) {
+        return map.entrySet()
+                .stream()
+                .sorted(Map.Entry
+                        .comparingByValue(
+                               /* Collections
+                                        .reverseOrder()*/))
+                .collect(Collectors.toMap(
+                        Map.Entry::getKey,
+                        Map.Entry::getValue,
+                        (e1, e2) -> e1,
+                        LinkedHashMap::new
+                ));
     }
 
     private static ArrayList<Integer> materialIndices(String fileName)
