@@ -65,7 +65,8 @@ public class BigVectorDistance {
 
     }
 
-    private static void findMaterial(int codId) throws SQLException {
+    private static MaterialObject findMaterial(int codId) throws SQLException {
+        MaterialObject result = null;
         for (int tableIndex = 0; tableIndex < NUMBER_OF_TABLES;
                 tableIndex++) {
             java.sql.Connection connection
@@ -105,18 +106,13 @@ public class BigVectorDistance {
                     energy[i] = value;
                     i++;
                 }
-                System.out.println("Found in table " + tableIndex);
-                for (double v : dos)
-                    System.err.print(v + ", ");
-                System.err.println("");
-                for (double v : energy)
-                    System.err.print(v + ", ");
-                System.err.println("");
-                System.err.println(dos.length + " " + energy.length);
+                MaterialObject m = new MaterialObject(dos, energy);
+                result = m;
                 break;
             }
             connection.close();
         }
+        return result;
     }
 
     private static void printResultSet() throws SQLException {
@@ -432,5 +428,15 @@ public class BigVectorDistance {
         connection.close();
         double resultingHVB = Double.parseDouble(hvb);
         return resultingHVB;
+    }
+}
+
+class MaterialObject {
+    public double[] dos;
+    public double[] energy;
+
+    public MaterialObject(double[] dos, double[] energy) {
+        this.dos = dos;
+        this.energy = energy;
     }
 }
