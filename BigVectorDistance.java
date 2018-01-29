@@ -37,9 +37,22 @@ public class BigVectorDistance {
 
     private static final int NUMBER_OF_INTERPOLATING_POINTS = 1000;
 
-    private static final boolean COSINE = true;
-    private static final boolean EUCLIDEAN = false;
+    private static final boolean COSINE = false;
+    private static final boolean EUCLIDEAN = true;
     private static final boolean REBUILD_DATABASE = false;
+
+    private static PrintWriter simWriter;
+
+
+    static {
+        try {
+            simWriter = new PrintWriter("similarities_euc.txt", "UTF-8");
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+        }
+    }
 
 
     public static void main(String[] args) throws SQLException,
@@ -61,9 +74,98 @@ public class BigVectorDistance {
             }
         }
 
-        Map<Integer, Double> results
-                = calculateDistances(2006985);
-        writeForPlot(results, 2006985);
+
+        try {
+            mId = materialIndices(MATERIAL_IDS);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        int c = 0;
+        for (int id : mId) {
+            c++;
+            if (c == 10) break;
+            try {
+                Map<Integer, Double> results
+                        = calculateDistances(id);
+                writeForPlot(results, id);
+                System.err.println("Done with material " + c);
+            } catch (NullPointerException e) {
+                c--;
+                System.err.println("Nullpointer for " + id);
+                continue;
+            }
+        }
+
+
+        simWriter.close();
+    }
+
+    private static void populateSimilarities() throws IOException, SQLException {
+        java.sql.Connection connection
+                = DriverManager.getConnection
+                (OMDB_URL,
+                        DATABASE_USER,
+                        DATABASE_PASSWORD);
+        BufferedReader br = new BufferedReader(new FileReader("similarities.txt"));
+        String everything;
+        try {
+            StringBuilder sb = new StringBuilder();
+            String line = br.readLine();
+
+            while (line != null) {
+                sb.append(line);
+                sb.append(System.lineSeparator());
+                line = br.readLine();
+            }
+            everything = sb.toString();
+        } finally {
+            br.close();
+        }
+
+        String query;
+        String[] elements = everything.split("\n");
+        for (String e : elements) {
+            System.err.println(e);
+            String[] lines = e.split(" ");
+            query = "INSERT INTO similarities (reference_id, cod1_cos, cod2_cos, " +
+                    "cod3_cos, cod4_cos, cod5_cos)" +
+                    " VALUES (" + lines[0] + ", " + lines[2] + ", " + lines[3] + ", "
+                    + lines[4] + ", " + lines[5] + ", " + lines[6] + ")";
+            Statement statement = connection.createStatement();
+            statement.executeUpdate(query);
+        }
+
+        BufferedReader br2 = new BufferedReader(new FileReader("similarities_euc.txt"));
+
+        try {
+            StringBuilder sb = new StringBuilder();
+            String line = br2.readLine();
+            System.err.println(line);
+
+            while (line != null) {
+                sb.append(line);
+                sb.append(System.lineSeparator());
+                line = br2.readLine();
+            }
+            everything = sb.toString();
+        } finally {
+            br2.close();
+        }
+
+        elements = everything.split("\n");
+        for (String e : elements) {
+            System.err.println(e);
+            String[] lines = e.split(" ");
+            query = "UPDATE similarities SET cod1_euc="+lines[2] + ", cod2_euc="+lines[3] + ", " +
+                    "cod3_euc="+lines[4] + ", cod4_euc="+lines[5] +", cod5_euc=" +lines[6] +
+                    " WHERE reference_id=" + lines[0];
+            Statement statement = connection.createStatement();
+            System.err.println(query);
+            statement.executeUpdate(query);
+        }
+
+        connection.close();
     }
 
     private static MaterialObject findMaterial(int codId) throws SQLException {
@@ -182,7 +284,7 @@ public class BigVectorDistance {
         return result;
     }
 
-    private static Map<Integer, Double> calculateDistances(int referenceCodId) throws SQLException {
+    private static Map<Integer, Double> calculateDistances(int referenceCodId) throws SQLException, FileNotFoundException, UnsupportedEncodingException {
         MaterialObject referenceMaterial = findMaterial(referenceCodId);
         HashMap<Integer, Double> similarities = new HashMap<>();
 
@@ -263,13 +365,18 @@ public class BigVectorDistance {
         System.err.println("");
         Map<Integer, Double> result = sortByValue(similarities);
         Set<Integer> keySet = result.keySet();
+
+        simWriter.write(referenceCodId + " ");
+
         int c = 0;
         for (int key : keySet) {
             c++;
             if (c==20) break;
             System.err.println(referenceCodId +
                     " dist " + key + " = " + similarities.get(key));
+            simWriter.write( key + " ");
         }
+        simWriter.write("\n");
         System.err.println("done");
         return result;
     }
