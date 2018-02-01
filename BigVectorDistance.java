@@ -56,7 +56,6 @@ public class BigVectorDistance {
         }
     }
 
-
     public static void main(String[] args) throws SQLException,
             ClassNotFoundException, IOException {
         if (REBUILD_DATABASE) {
