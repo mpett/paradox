@@ -43,10 +43,12 @@ public class BigVectorDistance {
 
     private static PrintWriter simWriter;
 
-
     static {
         try {
-            simWriter = new PrintWriter("similarities_euc.txt", "UTF-8");
+            simWriter =
+                    new PrintWriter(
+                            "similarities_euc.txt",
+                            "UTF-8");
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         } catch (UnsupportedEncodingException e) {
@@ -97,7 +99,6 @@ public class BigVectorDistance {
             }
         }
 
-
         simWriter.close();
     }
 
@@ -107,8 +108,11 @@ public class BigVectorDistance {
                 (OMDB_URL,
                         DATABASE_USER,
                         DATABASE_PASSWORD);
-        BufferedReader br = new BufferedReader(new FileReader("similarities.txt"));
+        BufferedReader br = new BufferedReader(
+                new FileReader("similarities.txt"));
+
         String everything;
+
         try {
             StringBuilder sb = new StringBuilder();
             String line = br.readLine();
@@ -136,7 +140,9 @@ public class BigVectorDistance {
             statement.executeUpdate(query);
         }
 
-        BufferedReader br2 = new BufferedReader(new FileReader("similarities_euc.txt"));
+        BufferedReader br2 =
+                new BufferedReader(
+                        new FileReader("similarities_euc.txt"));
 
         try {
             StringBuilder sb = new StringBuilder();
@@ -154,11 +160,14 @@ public class BigVectorDistance {
         }
 
         elements = everything.split("\n");
+
         for (String e : elements) {
             System.err.println(e);
             String[] lines = e.split(" ");
-            query = "UPDATE similarities SET cod1_euc="+lines[2] + ", cod2_euc="+lines[3] + ", " +
-                    "cod3_euc="+lines[4] + ", cod4_euc="+lines[5] +", cod5_euc=" +lines[6] +
+            query = "UPDATE similarities SET cod1_euc="+lines[2]
+                    + ", cod2_euc="+lines[3] + ", " +
+                    "cod3_euc="+lines[4] + ", cod4_euc="+lines[5]
+                    +", cod5_euc=" +lines[6] +
                     " WHERE reference_id=" + lines[0];
             Statement statement = connection.createStatement();
             System.err.println(query);
@@ -284,7 +293,8 @@ public class BigVectorDistance {
         return result;
     }
 
-    private static Map<Integer, Double> calculateDistances(int referenceCodId) throws SQLException, FileNotFoundException, UnsupportedEncodingException {
+    private static Map<Integer, Double> calculateDistances(int referenceCodId)
+            throws SQLException, FileNotFoundException, UnsupportedEncodingException {
         MaterialObject referenceMaterial = findMaterial(referenceCodId);
         HashMap<Integer, Double> similarities = new HashMap<>();
 
